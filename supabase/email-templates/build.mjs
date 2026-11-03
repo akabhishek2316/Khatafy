@@ -4,6 +4,8 @@ import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const dir = dirname(fileURLToPath(import.meta.url));
+// Public URL where /icons/logo-mark.png is served. Emails need an ABSOLUTE https URL for images.
+const SITE = (process.env.SITE_URL || 'https://khatafy-sable.vercel.app').replace(/\/$/, '');
 
 const shell = ({ preheader, title, titleHi, lines, linesHi, button, note, noteHi }) => `<!DOCTYPE html>
 <html lang="en">
@@ -20,18 +22,18 @@ const shell = ({ preheader, title, titleHi, lines, linesHi, button, note, noteHi
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;">
       <tr><td align="center" style="padding:0 0 18px;">
         <table role="presentation" cellspacing="0" cellpadding="0"><tr>
-          <td style="background:#4f46e5;background-image:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:12px;width:44px;height:44px;text-align:center;vertical-align:middle;font:700 24px Arial,Helvetica,sans-serif;color:#ffffff;">&#8377;</td>
+          <td style="vertical-align:middle;"><img src="${SITE}/icons/logo-mark.png" width="48" height="48" alt="Khatafy" style="display:block;border:0;outline:none;width:48px;height:48px;border-radius:10px;"></td>
           <td style="padding-left:12px;font:800 24px 'Segoe UI',Roboto,Arial,sans-serif;color:#1b1d3a;letter-spacing:-0.3px;">Khatafy</td>
         </tr></table>
       </td></tr>
       <tr><td style="background:#ffffff;border-radius:20px;border:1px solid #e4e6f4;padding:36px 32px;box-shadow:0 8px 30px rgba(49,46,129,0.08);">
         <h1 style="margin:0 0 14px;font:700 22px/1.3 'Segoe UI',Roboto,Arial,sans-serif;color:#1b1d3a;">${title}</h1>
         ${lines.map((l) => `<p style="margin:0 0 14px;font:400 15px/1.6 'Segoe UI',Roboto,Arial,sans-serif;color:#4b5075;">${l}</p>`).join('\n        ')}
-        ${button ? `<table role="presentation" cellspacing="0" cellpadding="0" style="margin:26px 0;"><tr><td style="border-radius:12px;background:#4f46e5;background-image:linear-gradient(135deg,#4f46e5,#7c3aed);">
+        ${button ? `<table role="presentation" cellspacing="0" cellpadding="0" style="margin:26px 0;"><tr><td style="border-radius:12px;background:#1d5fe0;background-image:linear-gradient(135deg,#1d5fe0,#19a0f0);">
           <a href="${button.href}" style="display:inline-block;padding:14px 30px;font:700 16px 'Segoe UI',Roboto,Arial,sans-serif;color:#ffffff;text-decoration:none;border-radius:12px;">${button.label}</a>
         </td></tr></table>
         <p style="margin:0 0 6px;font:400 12.5px/1.5 'Segoe UI',Roboto,Arial,sans-serif;color:#7a7fa3;">If the button does not work, copy this link into your browser:</p>
-        <p style="margin:0 0 18px;font:400 12.5px/1.5 'Segoe UI',Roboto,Arial,sans-serif;word-break:break-all;"><a href="${button.href}" style="color:#4f46e5;">${button.href}</a></p>` : ''}
+        <p style="margin:0 0 18px;font:400 12.5px/1.5 'Segoe UI',Roboto,Arial,sans-serif;word-break:break-all;"><a href="${button.href}" style="color:#1d5fe0;">${button.href}</a></p>` : ''}
         <hr style="border:0;border-top:1px solid #eceef8;margin:22px 0;">
         <h2 style="margin:0 0 8px;font:700 16px/1.4 'Noto Sans Devanagari','Segoe UI',Arial,sans-serif;color:#1b1d3a;">${titleHi}</h2>
         ${linesHi.map((l) => `<p style="margin:0 0 10px;font:400 14.5px/1.7 'Noto Sans Devanagari','Segoe UI',Arial,sans-serif;color:#4b5075;">${l}</p>`).join('\n        ')}
@@ -91,7 +93,7 @@ const T = {
   'reauthentication': shell({
     preheader: 'Your Khatafy confirmation code.',
     title: 'Your confirmation code', titleHi: 'आपका पुष्टि कोड',
-    lines: ['Enter this code to confirm it is you:', '<span style="display:inline-block;font:700 30px/1 \'Courier New\',monospace;letter-spacing:6px;color:#4f46e5;background:#eef0ff;border-radius:12px;padding:14px 20px;">{{ .Token }}</span>'],
+    lines: ['Enter this code to confirm it is you:', '<span style="display:inline-block;font:700 30px/1 \'Courier New\',monospace;letter-spacing:6px;color:#1d5fe0;background:#eef0ff;border-radius:12px;padding:14px 20px;">{{ .Token }}</span>'],
     linesHi: ['यह आप ही हैं, पक्का करने के लिए ऊपर का कोड डालें।'],
     note: 'Never share this code with anyone.', noteHi: 'यह कोड किसी को न बताएँ।',
   }),

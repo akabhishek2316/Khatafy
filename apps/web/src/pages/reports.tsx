@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { monthKey, monthToDate, shiftMonth, toCsv, paiseToPlain } from '@khatafy/core';
+import { monthKey, monthToDate, shiftMonth } from '@khatafy/core';
 import { api } from '../lib/supabase';
 import { useQuery } from '../lib/data';
 import { useAuth } from '../lib/auth';
 import { useT } from '../lib/i18n';
 import { useGroup } from '../lib/group';
-import { downloadText } from '../lib/files';
 import { catIcon } from '../lib/cats';
 import { Link } from '../lib/router';
 import { Button, Card, Empty, ErrorBox, Skeleton, NetAmount } from '../components/ui';
@@ -23,20 +22,11 @@ export function ReportsPage() {
   const maxCat = Math.max(1, ...(r?.by_category.map((c) => c.total_paise) ?? [1]));
   const maxMonth = Math.max(1, ...(r?.monthly_totals.map((c) => c.total_paise) ?? [1]));
 
-  const exportCsv = () => {
-    if (!r) return;
-    const rows: Array<Array<string | number | { text: string }>> = [
-      ...r.by_category.map((c) => [t('report.category'), t(`cat.${c.category_key}`), paiseToPlain(c.total_paise), c.count] as Array<string | number | { text: string }>),
-      ...r.by_member.map((m) => [t('report.member'), { text: nameOf(m.user_id) }, paiseToPlain(m.share_paise), paiseToPlain(m.paid_paise)] as Array<string | number | { text: string }>),
-    ];
-    downloadText(`khatafy-${group.name.replace(/[^\w]+/g, '-')}-${month}.csv`, toCsv([t('report.section'), t('report.name'), t('report.amount'), t('report.extra')], rows));
-  };
-
   return (
     <>
       <div className="page-head no-print">
         <h1>{t('nav.reports')}</h1>
-        <div className="btn-row"><Link className="btn btn-secondary" to={`/g/${gid}/statement`}>🧾 {t('nav.statement')}</Link><Button variant="secondary" onClick={exportCsv} disabled={!r}>{t('csv.export')}</Button><Button variant="secondary" onClick={() => window.print()}>{t('report.print')}</Button></div>
+        <div className="btn-row"><Link className="btn btn-secondary" to={`/g/${gid}/statement`}>🧾 {t('nav.statement')}</Link><Button variant="secondary" onClick={() => window.print()}>⬇ PDF</Button></div>
       </div>
       <div className="month-nav no-print">
         <Button variant="ghost" aria-label={t('report.prev')} onClick={() => setMonth(shiftMonth(month, -1))}>‹</Button>

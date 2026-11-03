@@ -158,7 +158,7 @@ function GroupFrame({ groupId, children }: { groupId: string; children: ReactNod
         <NavItem to={`${base}/more`} icon="☰" label={t('dash.more')} match={(p) => [`${base}/more`, `${base}/settlements`, `${base}/reports`, `${base}/statement`, `${base}/shopping`, `${base}/notices`, `${base}/activity`, `${base}/settings`, `${base}/requests`, `${base}/invitations`].includes(p)} />
       </nav>
       {!archived && !onForm && (
-        <Link to={`${base}/expense/new`} className="fab" aria-label={t('expense.add')}><span className="mi-ico" aria-hidden="true">＋</span></Link>
+        <Link to={`${base}/expense/new`} className="fab" aria-label={t('expense.add')}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></Link>
       )}
     </div>
   );

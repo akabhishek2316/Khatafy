@@ -7,7 +7,7 @@ import { useT } from '../lib/i18n';
 import { useToast } from '../lib/toast';
 import { Link, navigate } from '../lib/router';
 import { useTheme, type ThemePref } from '../lib/theme';
-import { downloadText, uploadAvatar } from '../lib/files';
+import { uploadAvatar } from '../lib/files';
 import { Avatar, Button, ExitIcon, Card, ConfirmModal, Empty, ErrorBox, Field, Select, Skeleton } from '../components/ui';
 
 export type ProfileSection = 'details' | 'prefs' | 'password' | 'privacy' | 'account';
@@ -27,7 +27,6 @@ export function ProfilePage({ section = 'details' }: { section?: ProfileSection 
   const [pwBusy, setPwBusy] = useState(false);
   const [del, setDel] = useState(false);
   const [delText, setDelText] = useState('');
-  const [exporting, setExporting] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   const theme = useTheme();
   useEffect(() => { if (profile) { setName(profile.full_name); setPhone(profile.phone ?? ''); } }, [profile]);
@@ -57,10 +56,6 @@ export function ProfilePage({ section = 'details' }: { section?: ProfileSection 
     if (pw === pwCur) return setPwErr(t('err.PASSWORD_SAME'));
     setPwBusy(true);
     try { await changePassword(pwCur, pw); setPwCur(''); setPw(''); setPw2(''); toast.push('success', t('profile.password_changed')); } catch (x) { setPwErr(errorText(x)); } finally { setPwBusy(false); }
-  };
-  const exportData = async () => {
-    setExporting(true);
-    try { const d = await api.exportMyData(); downloadText('khatafy-my-data.json', JSON.stringify(d, null, 2), 'application/json'); } catch (x) { toast.push('error', errorText(x)); } finally { setExporting(false); }
   };
   const deleteAccount = async () => {
     setBusy(true);
@@ -105,8 +100,7 @@ export function ProfilePage({ section = 'details' }: { section?: ProfileSection 
       )}
       {section === 'privacy' && (
         <Card title={t('profile.privacy')}>
-          <p className="muted small">{t('profile.export_text')}</p>
-          <Button variant="secondary" loading={exporting} onClick={exportData}>{t('profile.export')}</Button>
+          <p className="muted small">{t('profile.privacy_note')}</p>
           <p className="small"><Link to="/privacy">{t('legal.privacy')}</Link> · <Link to="/terms">{t('legal.terms')}</Link>{SUPPORT_EMAIL && <> · <a href={`mailto:${SUPPORT_EMAIL}`}>{t('legal.contact')}</a></>}</p>
         </Card>
       )}

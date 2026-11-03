@@ -100,8 +100,8 @@ export function SettingsPage() {
       )}
       {!isAdmin && <Card><p className="muted">{t('settings.admin_only')}</p></Card>}
       <Card title={t('settings.danger')}>
-        {<div className="row"><span className="grow">{t('settings.leave_text')}</span><Button variant="danger" onClick={() => setConfirm('leave')}>{t('settings.leave')}</Button></div>}
-        {isAdmin && !archived && <div className="row"><span className="grow">{t('settings.archive_text')}</span><Button variant="danger" onClick={() => setConfirm('archive')}>{t('settings.archive')}</Button></div>}
+        {<div className="danger-item"><p>{t('settings.leave_text')}</p><Button variant="danger" onClick={() => setConfirm('leave')}>{t('settings.leave')}</Button></div>}
+        {isAdmin && !archived && <div className="danger-item"><p>{t('settings.archive_text')}</p><Button variant="danger" onClick={() => setConfirm('archive')}>{t('settings.archive')}</Button></div>}
         {isAdmin && <p className="muted small">{t('settings.admin_leave_note')}</p>}
       </Card>
       {confirm === 'archive' && <ConfirmModal title={t('settings.archive')} text={t('settings.archive_confirm')} confirmLabel={t('settings.archive')} danger busy={busy} onClose={() => setConfirm(null)} onConfirm={archive} />}

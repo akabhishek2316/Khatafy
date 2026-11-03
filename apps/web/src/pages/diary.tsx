@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { editWindowLeftMs, expensesToCsv, type Category, type ExpenseListItem } from '@khatafy/core';
+import { editWindowLeftMs, type Category, type ExpenseListItem } from '@khatafy/core';
 import { useNow } from '../lib/now';
 import { api } from '../lib/supabase';
 import { usePaged, useQuery, invalidate } from '../lib/data';
@@ -9,7 +9,7 @@ import { useGroup } from '../lib/group';
 import { useToast } from '../lib/toast';
 import { Link, navigate } from '../lib/router';
 import { catIcon } from '../lib/cats';
-import { downloadText, receiptProblem, signedReceiptUrl, uploadReceipt } from '../lib/files';
+import { receiptProblem, signedReceiptUrl, uploadReceipt } from '../lib/files';
 import { Badge, Button, Card, Empty, ErrorBox, Field, Select, Skeleton, Modal, Spinner } from '../components/ui';
 
 export function ExpenseRow({ e, groupId, cats }: { e: ExpenseListItem; groupId: string; cats: Category[] }) {
@@ -43,29 +43,10 @@ export function DiaryPage() {
   const [search, setSearch] = useState('');
   const [cat, setCat] = useState('');
   const [member, setMember] = useState('');
-  const [exporting, setExporting] = useState(false);
   useEffect(() => { const id = setTimeout(() => setSearch(q), 300); return () => clearTimeout(id); }, [q]);
 
   const filters = { search, category: cat || null, memberId: member || null };
   const list = usePaged<ExpenseListItem>(`g:${gid}:diary:${search}|${cat}|${member}`, (cursor) => api.listExpenses(gid, { ...filters, before: cursor }), { onSessionExpired: expireSession });
-
-  const exportCsv = async () => {
-    setExporting(true);
-    try {
-      const rows: ExpenseListItem[] = [];
-      let cursor = null as { ts: string; id: string } | null;
-      do {
-        const p = await api.listExpenses(gid, { ...filters, limit: 100, before: cursor });
-        rows.push(...p.items);
-        cursor = p.next;
-      } while (cursor && rows.length < 5000);
-      const catName = (k: string) => { const c = cats.data?.find((x) => x.key === k); return (lang === 'hi' ? c?.name_hi : c?.name_en) ?? k; };
-      downloadText(`khatafy-${group.name.replace(/[^\w]+/g, '_')}-expenses.csv`, expensesToCsv(
-        rows.map((r) => ({ ...r, category: catName(r.category_key), status: r.status === 'voided' ? t('expense.voided') : t('expense.active') })),
-        { date: t('csv.date'), title: t('csv.title'), category: t('csv.category'), amount: t('csv.amount'), paidBy: t('csv.paid_by'), status: t('csv.status'), note: t('csv.note') },
-      ));
-    } catch (x) { toast.push('error', errorText(x)); } finally { setExporting(false); }
-  };
 
   return (
     <>
@@ -95,7 +76,6 @@ export function DiaryPage() {
           {list.next && <Button variant="secondary" loading={list.loadingMore} onClick={list.loadMore}>{t('common.load_more')}</Button>}
         </Card>
       )}
-      <Button variant="ghost" loading={exporting} onClick={exportCsv}>⬇ {t('report.export_csv')}</Button>
     </>
   );
 }

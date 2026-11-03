@@ -105,4 +105,20 @@ add('auth.current_password', 'Current password', 'मौजूदा पास�
 add('err.CURRENT_PASSWORD_WRONG', 'Current password is incorrect.', 'मौजूदा पासवर्ड गलत है।');
 add('err.PASSWORD_SAME', 'New password must be different from the current one.', 'नया पासवर्ड मौजूदा पासवर्ड से अलग होना चाहिए।');
 
+// ---- v1.2 wording + statement person filter
+add('dash.you_pay', 'You need to pay {to} {amount}', 'आपको {to} को {amount} देने हैं');
+add('dash.pays_you', '{from} needs to pay you {amount}', '{from} से आपको {amount} मिलने हैं');
+add('profile.privacy_note', 'Your data is visible only to members of your groups. Use the PDF statement to keep a copy of your records.', 'आपका डेटा सिर्फ़ आपके ग्रुप के सदस्यों को दिखता है। रिकॉर्ड की कॉपी के लिए PDF स्टेटमेंट डाउनलोड करें।');
+add('stmt.person', 'View for', 'किसके लिए देखें');
+add('stmt.everyone', 'Everyone', 'सभी');
+add('stmt.stat_daily', 'Average per day', 'रोज़ का औसत खर्च');
+add('stmt.stat_biggest', 'Biggest expense', 'सबसे बड़ा खर्च');
+add('stmt.stat_topcat', 'Top category', 'सबसे ज़्यादा खर्च की श्रेणी');
+add('stmt.person_paid', 'Paid by {name}', '{name} ने दिया');
+add('stmt.person_share', 'Share of {name}', '{name} का हिस्सा');
+add('stmt.person_diff', 'Difference (paid − share)', 'अंतर (दिया − हिस्सा)');
+add('stmt.person_empty', 'No expenses for this person in this period.', 'इस अवधि में इस व्यक्ति का कोई खर्च नहीं।');
+add('stmt.their_share', 'Share', 'हिस्सा');
+add('stmt.for_person', 'Statement for {name}', '{name} का स्टेटमेंट');
+
 export const extraMessages = d;

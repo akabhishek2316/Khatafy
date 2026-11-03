@@ -14,4 +14,4 @@ Supabase Dashboard → **Authentication → Emails → Templates**, open each te
 | Reauthentication | `reauthentication.html` | Your Khatafy confirmation code |
 
 Also set the **sender name** to `Khatafy` in Authentication → SMTP Settings.
-Edit text in `build.mjs` and run `node supabase/email-templates/build.mjs` to regenerate.
+The logo is loaded from `SITE_URL/icons/logo-mark.png` (default https://khatafy-sable.vercel.app; change with `SITE_URL=https://your-domain node build.mjs`). Edit text in `build.mjs` and run `node supabase/email-templates/build.mjs` to regenerate.

@@ -84,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async signOut() {
       await supabase.auth.signOut();
       clearCache();
+      try { localStorage.removeItem('khatafy.drafts.v1'); } catch { /* ignore */ }
       setProfile(null);
       navigate('/login', { replace: true });
     },

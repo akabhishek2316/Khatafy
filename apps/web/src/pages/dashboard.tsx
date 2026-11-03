@@ -100,12 +100,6 @@ export function DashboardPage() {
         ) : <Empty icon="🧾" title={t('diary.empty')} hint={t('diary.empty_hint')} action={!archived ? <Link to={`/g/${gid}/expense/new`} className="btn btn-primary">{t('expense.add')}</Link> : undefined} />}
       </Card>
 
-      <nav className="tiles" aria-label={t('dash.more')}>
-        {[['balances', '⚖️', 'nav.balances'], ['settlements', '💸', 'nav.settlements'], ['shopping', '🛒', 'nav.shopping'], ['notices', '📌', 'nav.notices'], ['activity', '🕘', 'nav.activity'], ['settings', '⚙️', 'nav.settings']].map(([p, i, k]) => (
-          <Link key={p} to={`/g/${gid}/${p}`} className="tile"><span aria-hidden="true">{i}</span>{t(k!)}</Link>
-        ))}
-        {isAdmin && <Link to={`/g/${gid}/invitations`} className="tile"><span aria-hidden="true">🔗</span>{t('nav.invitations')}{group.pending_requests ? <Badge tone="warn">{group.pending_requests}</Badge> : null}</Link>}
-      </nav>
       {payFor && <PaymentModal groupId={gid} initial={payFor} onClose={() => setPayFor(null)} />}
     </>
   );
