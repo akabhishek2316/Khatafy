@@ -1,0 +1,23 @@
+{
+  "name": "khatafy",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Khatafy - shared room expense diary (web app / installable PWA)",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "typecheck": "npm run typecheck -w @khatafy/core && npm run typecheck -w @khatafy/web",
+    "test:core": "npm run test -w @khatafy/core",
+    "test:db": "tsx --test supabase/tests/db.test.ts supabase/tests/parity.test.ts",
+    "test:e2e": "npm run test:e2e -w @khatafy/web",
+    "web:dev": "npm run dev -w @khatafy/web",
+    "web:build": "npm run build -w @khatafy/web",
+    "web:preview": "npm run preview -w @khatafy/web",
+    "db:bundle": "node supabase/scripts/bundle-sql.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  },
+  "engines": { "node": ">=20" }
+}
