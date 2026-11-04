@@ -44,10 +44,6 @@ export function ReportsPage() {
                   <li key={c.category_key}><span>{catIcon(c.category_key)} {t(`cat.${c.category_key}`)}</span><span className="bar"><i style={{ width: `${(c.total_paise / maxCat) * 100}%` }} /></span><strong>{money(c.total_paise)}</strong></li>
                 ))}</ul>
               </Card>
-              <Card title={t('report.by_member')}>
-                <div className="table-wrap"><table className="table"><thead><tr><th>{t('report.member')}</th><th className="num">{t('report.paid')}</th><th className="num">{t('report.share')}</th><th className="num">{t('report.net')}</th></tr></thead>
-                  <tbody>{r.by_member.map((m) => <tr key={m.user_id}><td>{nameOf(m.user_id)}</td><td className="num">{money(m.paid_paise)}</td><td className="num">{money(m.share_paise)}</td><td className="num"><NetAmount paise={m.net_paise} /></td></tr>)}</tbody></table></div>
-              </Card>
             </>
           )}
           <Card title={t('report.trend')}>

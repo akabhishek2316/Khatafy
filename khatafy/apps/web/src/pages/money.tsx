@@ -63,6 +63,17 @@ export function PaymentModal({ groupId, initial, onClose }: { groupId: string; i
 
 import { MemberShares } from '../components/shares';
 
+function BalanceTabs({ active }: { active: 'balances' | 'payments' }) {
+  const { t } = useT();
+  const { group } = useGroup();
+  return (
+    <nav className="subnav" aria-label={t('nav.balances')}>
+      <Link to={`/g/${group.id}/balances`} className={active === 'balances' ? 'on' : ''} aria-current={active === 'balances' ? 'page' : undefined}>⚖️ {t('nav.balances')}</Link>
+      <Link to={`/g/${group.id}/settlements`} className={active === 'payments' ? 'on' : ''} aria-current={active === 'payments' ? 'page' : undefined}>💸 {t('nav.settlements')}</Link>
+    </nav>
+  );
+}
+
 export function BalancesPage() {
   const { t, money, errorText } = useT();
   const toast = useToast();
@@ -87,6 +98,7 @@ export function BalancesPage() {
   };
   return (
     <>
+      <BalanceTabs active="balances" />
       <h1>{t('nav.balances')}</h1>
       <div className="tabs" role="tablist">
         <button role="tab" aria-selected={month === null} className={month === null ? 'on' : ''} onClick={() => setMonth(null)}>{t('bal.lifetime')}</button>
@@ -161,6 +173,7 @@ export function SettlementsPage() {
 
   return (
     <>
+      <BalanceTabs active="payments" />
       <div className="page-head"><h1>{t('nav.settlements')}</h1>{!archived && <Button onClick={() => setOpen(true)}>＋ {t('pay.record')}</Button>}</div>
       <div className="banner banner-info small">{t('pay.manual_note')}</div>
       <Select label={t('pay.status_filter')} value={status} onChange={(e) => setStatus(e.target.value)}>

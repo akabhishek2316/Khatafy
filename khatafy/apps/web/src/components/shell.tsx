@@ -132,16 +132,13 @@ function GroupFrame({ groupId, children }: { groupId: string; children: ReactNod
         <nav className="sidebar" aria-label={t('nav.main')}>
           <NavItem to={base} icon="🏠" label={t('nav.home')} />
           <NavItem to={`${base}/diary`} icon="📒" label={t('nav.diary')} match={(p) => p.startsWith(`${base}/diary`) || p.startsWith(`${base}/expense`)} />
-          <NavItem to={`${base}/balances`} icon="⚖️" label={t('nav.balances')} />
-          <NavItem to={`${base}/settlements`} icon="💸" label={t('nav.settlements')} />
-          <NavItem to={`${base}/members`} icon="👥" label={t('nav.members')} match={(p) => p.startsWith(`${base}/members`)} />
+          <NavItem to={`${base}/balances`} icon="⚖️" label={t('nav.balances')} match={(p) => p.startsWith(`${base}/balances`) || p.startsWith(`${base}/settlements`)} />
+          <NavItem to={`${base}/members`} icon="👥" label={`${t('nav.members')}${isAdmin && group.pending_requests ? ` (${group.pending_requests})` : ''}`} match={(p) => [`${base}/members`, `${base}/requests`, `${base}/invitations`].some((x) => p.startsWith(x))} />
           <NavItem to={`${base}/reports`} icon="📊" label={t('nav.reports')} />
           <NavItem to={`${base}/statement`} icon="🧾" label={t('nav.statement')} />
+          <NavItem to={`${base}/close`} icon="🔒" label={t('nav.close')} />
           <NavItem to={`${base}/shopping`} icon="🛒" label={t('nav.shopping')} />
           <NavItem to={`${base}/notices`} icon="📌" label={t('nav.notices')} />
-          <NavItem to={`${base}/activity`} icon="🕘" label={t('nav.activity')} />
-          {isAdmin && <NavItem to={`${base}/requests`} icon="🙋" label={`${t('nav.requests')}${group.pending_requests ? ` (${group.pending_requests})` : ''}`} />}
-          {isAdmin && <NavItem to={`${base}/invitations`} icon="🔗" label={t('nav.invitations')} />}
           <NavItem to={`${base}/settings`} icon="⚙️" label={t('nav.settings')} />
         </nav>
         <main className="page" id="main">
@@ -153,9 +150,9 @@ function GroupFrame({ groupId, children }: { groupId: string; children: ReactNod
       <nav className="bottomnav" aria-label={t('nav.main')}>
         <NavItem to={base} icon="🏠" label={t('nav.home')} />
         <NavItem to={`${base}/diary`} icon="📒" label={t('nav.diary')} match={(p) => p.startsWith(`${base}/diary`) || p.startsWith(`${base}/expense`)} />
-        <NavItem to={`${base}/members`} icon="👥" label={t('nav.members')} match={(p) => p.startsWith(`${base}/members`)} />
-        <NavItem to={`${base}/balances`} icon="⚖️" label={t('nav.balances')} />
-        <NavItem to={`${base}/more`} icon="☰" label={t('dash.more')} match={(p) => [`${base}/more`, `${base}/settlements`, `${base}/reports`, `${base}/statement`, `${base}/shopping`, `${base}/notices`, `${base}/activity`, `${base}/settings`, `${base}/requests`, `${base}/invitations`].includes(p)} />
+        <NavItem to={`${base}/members`} icon="👥" label={`${t('nav.members')}${isAdmin && group.pending_requests ? ` (${group.pending_requests})` : ''}`} match={(p) => [`${base}/members`, `${base}/requests`, `${base}/invitations`].some((x) => p.startsWith(x))} />
+        <NavItem to={`${base}/balances`} icon="⚖️" label={t('nav.balances')} match={(p) => p.startsWith(`${base}/balances`) || p.startsWith(`${base}/settlements`)} />
+        <NavItem to={`${base}/more`} icon="☰" label={t('dash.more')} match={(p) => [`${base}/more`, `${base}/reports`, `${base}/statement`, `${base}/close`, `${base}/shopping`, `${base}/notices`, `${base}/activity`, `${base}/settings`].includes(p)} />
       </nav>
       {!archived && !onForm && (
         <Link to={`${base}/expense/new`} className="fab" aria-label={t('expense.add')}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></Link>

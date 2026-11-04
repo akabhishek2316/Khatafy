@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { dayKey, monthKey, monthRange, paiseToPlain, payerBeneficiaryTotals, shiftMonth } from '@khatafy/core';
+import { dayKey, monthKey, monthRange, paiseToPlain, shiftMonth } from '@khatafy/core';
 import { api } from '../lib/supabase';
 import { useQuery } from '../lib/data';
 import { useAuth } from '../lib/auth';
@@ -33,7 +33,6 @@ export function StatementPage() {
 
   const q = useQuery(`g:${gid}:stmt:${range.from}:${range.to}`, () => api.getStatement(gid, range.from, range.to), { onSessionExpired: expireSession });
   const s = q.data;
-  const pairs = useMemo(() => (s ? payerBeneficiaryTotals(s) : []), [s]);
   const pm = s && person !== 'all' ? s.members.find((m) => m.user_id === person) : undefined;
   const exps = !s ? [] : pm ? s.expenses.filter((e) => e.paid_by === person || e.splits.some((p) => p.user_id === person && p.share_paise > 0)) : s.expenses;
   const pays = !s ? [] : pm ? s.payments.filter((p) => p.from_user === person || p.to_user === person) : s.payments;
@@ -131,15 +130,6 @@ export function StatementPage() {
                 </div>
               </Card>
               <MemberShares title={t('stmt.by_member')} total={s.total_paise} rows={s.members.map((m) => ({ id: m.user_id, name: m.full_name, share: m.share_paise, paid: m.paid_paise, status: m.status }))} />
-              <Card title={t('stmt.pairs')}>
-                <p className="muted small">{t('stmt.pairs_hint')}</p>
-                {pairs.length === 0 ? <p className="muted">—</p> : (
-                  <div className="table-wrap"><table className="table" data-testid="stmt-pairs">
-                    <thead><tr><th>{t('stmt.col_payer')}</th><th>{t('stmt.col_for')}</th><th className="num">{t('stmt.col_amount')}</th></tr></thead>
-                    <tbody>{pairs.map((p) => <tr key={p.payerId + p.forId}><td>{p.payerName}</td><td>{p.forName}</td><td className="num">{money(p.paise)}</td></tr>)}</tbody>
-                  </table></div>
-                )}
-              </Card>
             </>
           )}
 
