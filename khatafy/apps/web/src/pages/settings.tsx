@@ -4,6 +4,7 @@ import { api } from '../lib/supabase';
 import { invalidate, useQuery } from '../lib/data';
 import { useAuth } from '../lib/auth';
 import { useT } from '../lib/i18n';
+import { Link } from '../lib/router';
 import { useGroup } from '../lib/group';
 import { useToast } from '../lib/toast';
 import { navigate } from '../lib/router';
@@ -75,6 +76,7 @@ export function SettingsPage() {
 
   return (
     <>
+      <Card><Link to={`/g/${gid}/activity`} className="row"><span className="cat-ico" aria-hidden="true">🕘</span><span className="grow">{t('nav.activity')}</span><span aria-hidden="true">›</span></Link></Card>
       <h1>{t('nav.settings')}</h1>
       {isAdmin && !archived && (
         <Card title={t('settings.group')}>

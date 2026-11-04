@@ -23,7 +23,17 @@ Hindi + English, INR (₹), paise-level accurate hisab, admin-approval se group 
 
 **v1.2:** sirf PDF download (JSON/CSV hata diye), Statement me person-wise filter + useful stats, Home se extra links hata diye, Settings danger zone theek, naya + button, mobile par chhota font, "You need to pay ..." wording.
 
-**v1.4 (Settle & close, replaces the 6/9/12-month auto-delete):** an admin closes the books up to a date once members have settled. 7-day review (any member can object, admin can cancel) -> summary kept ("Settled history": total, per-head, paid/share, who paid whom) -> detailed expenses/payments deleted -> unpaid dues carried forward as "earlier balance". Closed dates become read-only. Run, in order: `0013` (only if not run before) then `supabase/migrations/0014_period_close.sql` (it also removes the retention objects from 0013).
+**v1.5.1:** review window for "Close period" shortened from 7 to 3 days. Run `supabase/migrations/0015_close_review_3_days.sql`.
+
+**v1.5 (cleaner screens, no duplicate data):**
+- Home: one summary card (balance + this month + my share), pending confirmations, settle-up, last 3 expenses. Removed the per-person share card and budget card.
+- Balances and Payments are now one place (two tabs). Members page holds Requests and Invitations. Activity moved into Settings.
+- More menu: Reports, Statement, Close & history, Shopping list, Notices, Settings, Profile, Help.
+- Removed duplicates: Statement "who paid whom" table, Reports "by member" table. Per-person share now shows in Balances and Statement only.
+- Old links (`/settlements`, `/requests`, `/invitations`) still work, so notifications and bookmarks do not break.
+- No database change in v1.5.
+
+**v1.4 (Settle & close, replaces the 6/9/12-month auto-delete):** an admin closes the books up to a date once members have settled. 3-day review (any member can object, admin can cancel) -> summary kept ("Settled history": total, per-head, paid/share, who paid whom) -> detailed expenses/payments deleted -> unpaid dues carried forward as "earlier balance". Closed dates become read-only. Run, in order: `0013` (only if not run before) then `supabase/migrations/0014_period_close.sql` (it also removes the retention objects from 0013).
 1. Enable **pg_cron** (Dashboard -> Integrations -> Cron), then re-run 0014 if it printed "pg_cron is not enabled". The finalising job runs daily at 03:00 IST.
 2. Receipt **files** are removed only through the Storage API: deploy the Edge Function `supabase/functions/purge-receipts` (steps in its header; needs a `CRON_SECRET`; schedule it daily in Dashboard -> Cron). Until then, receipt files of closed periods stay in storage (unreachable from the app, but not erased).
 3. Privacy Policy and Terms were updated. **Have a lawyer review them** and fill the `VITE_COMPANY_*` variables.
@@ -192,3 +202,5 @@ Google ke consent screen par jo naam/URL dikhta hai wo **app ke code se nahi, Go
 
 ## 10. Updates ke baare me
 Ye app kisi cheez ko "update" nahi maangti. Sirf: (a) future me SQL badlao to naya migration file add hota hai, (b) `npm audit` se kabhi-kabhi dependencies update karna achchhi aadat hai.
+
+**v1.5.2:** app icon (home screen / install) is now the logo only, without the "Khatafy" text. Uninstall and reinstall the app (or clear site data) to see it on a phone.

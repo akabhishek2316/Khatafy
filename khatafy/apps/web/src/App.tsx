@@ -61,12 +61,11 @@ function GroupRoutes({ id, rest }: { id: string; rest: string }) {
 function MorePage({ id }: { id: string }) {
   const { t } = useT();
   const { signOut } = useAuth();
-  const { isAdmin, group } = useGroup();
   const g = (p: string) => `/g/${id}/${p}`;
   const items: Array<[string, string, string]> = [
-    [g('settlements'), '💸', t('nav.settlements')], [g('reports'), '📊', t('nav.reports')], [g('statement'), '🧾', t('nav.statement')], [g('close'), '🔒', t('nav.close')], [g('shopping'), '🛒', t('nav.shopping')], [g('notices'), '📌', t('nav.notices')], [g('activity'), '🕘', t('nav.activity')],
-    ...(isAdmin ? ([[g('requests'), '🙋', `${t('nav.requests')}${group.pending_requests ? ` (${group.pending_requests})` : ''}`], [g('invitations'), '🔗', t('nav.invitations')]] as Array<[string, string, string]>) : []),
-    [g('settings'), '⚙️', t('nav.settings')], ['/profile', '👤', t('nav.profile')], ['/help', '❓', t('menu.help')],
+    [g('reports'), '📊', t('nav.reports')], [g('statement'), '🧾', t('nav.statement')], [g('close'), '🔒', t('nav.close')],
+    [g('shopping'), '🛒', t('nav.shopping')], [g('notices'), '📌', t('nav.notices')], [g('settings'), '⚙️', t('nav.settings')],
+    ['/profile', '👤', t('nav.profile')], ['/help', '❓', t('menu.help')],
   ];
   return (
     <>

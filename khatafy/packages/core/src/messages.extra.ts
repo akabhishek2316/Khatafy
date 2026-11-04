@@ -131,7 +131,7 @@ add('close.new_title', 'Close a period', 'एक अवधि बंद कर�
 add('close.end_date', 'Close up to (date)', 'इस तारीख़ तक बंद करें');
 add('close.request', 'Request close', 'बंद करने का अनुरोध');
 add('close.confirm_title', 'Request to close?', 'बंद करने का अनुरोध करें?');
-add('close.confirm_text', 'All members are notified and can review for 7 days. After that, expenses and payments up to {date} are permanently deleted and only the summary stays. Unpaid dues are carried forward.', 'सभी सदस्यों को सूचना जाएगी और वे 7 दिन तक देख सकते हैं। उसके बाद {date} तक के खर्च और भुगतान हमेशा के लिए हट जाएँगे और सिर्फ़ सारांश रहेगा। बकाया आगे जुड़ जाएगा।');
+add('close.confirm_text', 'All members are notified and can review for 3 days. After that, expenses and payments up to {date} are permanently deleted and only the summary stays. Unpaid dues are carried forward.', 'सभी सदस्यों को सूचना जाएगी और वे 3 दिन तक देख सकते हैं। उसके बाद {date} तक के खर्च और भुगतान हमेशा के लिए हट जाएँगे और सिर्फ़ सारांश रहेगा। बकाया आगे जुड़ जाएगा।');
 add('close.pending_title', 'Close waiting for review', 'बंद करना समीक्षा के इंतज़ार में');
 add('close.pending_text', 'Up to {date}. Will be finalised on {final} if nobody objects. Download your PDF before then.', '{date} तक। किसी ने आपत्ति न की तो {final} को पूरा होगा। उससे पहले अपना PDF डाउनलोड कर लें।');
 add('close.preview', 'Preview (final numbers are taken when the close is finalised)', 'पूर्वावलोकन (अंतिम आँकड़े बंद होते समय लिए जाते हैं)');
@@ -160,7 +160,7 @@ add('close.pdf', '⬇ PDF', '⬇ PDF');
 add('close.final_note', 'Individual expense details are deleted after closing; this summary stays.', 'बंद होने के बाद अलग-अलग खर्च का ब्योरा हट जाता है; यह सारांश रहता है।');
 add('close.closed_on', 'Closed on {date}', '{date} को बंद हुआ');
 add('close.prev_balance', 'Includes earlier balance {amount}', 'पिछला बकाया शामिल: {amount}');
-add('notif.close_requested', '{name} asked to close the books up to {date}. Review and download your statement within 7 days.', '{name} ने {date} तक हिसाब बंद करने को कहा है। 7 दिन में देखें और अपना स्टेटमेंट डाउनलोड कर लें।');
+add('notif.close_requested', '{name} asked to close the books up to {date}. Review and download your statement within 3 days.', '{name} ने {date} तक हिसाब बंद करने को कहा है। 3 दिन में देखें और अपना स्टेटमेंट डाउनलोड कर लें।');
 add('notif.close_objection', '{name} objected to closing the period.', '{name} ने हिसाब बंद करने पर आपत्ति की है।');
 add('notif.close_cancelled', '{name} cancelled the period close.', '{name} ने हिसाब बंद करना रद्द कर दिया।');
 add('notif.close_done', 'The period up to {date} was closed. The summary is in Settled history.', '{date} तक की अवधि बंद हो गई। सारांश "हिसाब का इतिहास" में है।');
@@ -171,6 +171,6 @@ add('err.CLOSE_NOT_FOUND', 'Close request not found.', 'बंद करने �
 add('err.CLOSE_NOT_PENDING', 'This close is no longer pending.', 'यह अनुरोध अब लंबित नहीं है।');
 add('err.PERIOD_CLOSED', 'This date falls in a closed period. Use a later date.', 'यह तारीख़ बंद हो चुकी अवधि में है। बाद की तारीख़ चुनें।');
 add('help.q10', 'What does "Close & history" do?', '"हिसाब बंद और इतिहास" क्या करता है?');
-add('help.a10', 'When everyone has settled, an admin can close the books up to a date. Members get 7 days to review or object. Then detailed expenses are deleted and a summary (total, per-head, who paid whom) stays. Unpaid dues are carried forward.', 'सबके हिसाब चुकाने पर एडमिन किसी तारीख़ तक हिसाब बंद कर सकता है। सदस्यों को देखने या आपत्ति करने के 7 दिन मिलते हैं। फिर खर्च का ब्योरा हट जाता है और सारांश (कुल, प्रति व्यक्ति, किसने किसे चुकाया) रहता है। जो बकाया है वह आगे जुड़ता है।');
+add('help.a10', 'When everyone has settled, an admin can close the books up to a date. Members get 3 days to review or object. Then detailed expenses are deleted and a summary (total, per-head, who paid whom) stays. Unpaid dues are carried forward.', 'सबके हिसाब चुकाने पर एडमिन किसी तारीख़ तक हिसाब बंद कर सकता है। सदस्यों को देखने या आपत्ति करने के 3 दिन मिलते हैं। फिर खर्च का ब्योरा हट जाता है और सारांश (कुल, प्रति व्यक्ति, किसने किसे चुकाया) रहता है। जो बकाया है वह आगे जुड़ता है।');
 
 export const extraMessages = d;
