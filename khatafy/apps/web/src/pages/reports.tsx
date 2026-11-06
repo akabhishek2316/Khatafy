@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { monthKey, monthToDate, shiftMonth } from '@khatafy/core';
+import { PeriodPicker, periodBounds } from '../components/period';
 import { api } from '../lib/supabase';
 import { useQuery } from '../lib/data';
 import { useAuth } from '../lib/auth';
@@ -16,7 +17,12 @@ export function ReportsPage() {
   const gid = group.id;
   const current = monthKey(new Date(), group.timezone);
   const [month, setMonth] = useState(current);
-  const q = useQuery(`g:${gid}:report:${month}`, () => api.getReport(gid, monthToDate(month)), { onSessionExpired: expireSession });
+  const [mode, setMode] = useState<'month' | 'period'>('month');
+  const [pid, setPid] = useState('current');
+  const closes = useQuery(`g:${gid}:closes`, () => api.listPeriodCloses(gid));
+  const bounds = mode === 'period' && closes.data ? periodBounds(closes.data, pid) : null;
+  const q = useQuery(mode === 'month' ? `g:${gid}:report:${month}` : closes.data ? `g:${gid}:report:p:${pid}:${closes.data.length}` : null,
+    () => (mode === 'month' || !bounds ? api.getReport(gid, monthToDate(month)) : api.getReportRange(gid, bounds.from, bounds.to)), { onSessionExpired: expireSession });
   const r = q.data;
   const label = (m: string) => new Intl.DateTimeFormat(lang === 'hi' ? 'hi-IN' : 'en-IN', { month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${m}-01T00:00:00Z`));
   const maxCat = Math.max(1, ...(r?.by_category.map((c) => c.total_paise) ?? [1]));
@@ -28,11 +34,19 @@ export function ReportsPage() {
         <h1>{t('nav.reports')}</h1>
         <div className="btn-row"><Link className="btn btn-secondary" to={`/g/${gid}/statement`}>🧾 {t('nav.statement')}</Link><Button variant="secondary" onClick={() => window.print()}>⬇ PDF</Button></div>
       </div>
-      <div className="month-nav no-print">
-        <Button variant="ghost" aria-label={t('report.prev')} onClick={() => setMonth(shiftMonth(month, -1))}>‹</Button>
-        <strong data-testid="report-month">{label(month)}</strong>
-        <Button variant="ghost" aria-label={t('report.next')} disabled={month >= current} onClick={() => setMonth(shiftMonth(month, 1))}>›</Button>
+      <div className="tabs no-print" role="tablist">
+        <button role="tab" aria-selected={mode === 'month'} className={mode === 'month' ? 'on' : ''} onClick={() => setMode('month')}>{t('report.mode_month')}</button>
+        <button role="tab" aria-selected={mode === 'period'} className={mode === 'period' ? 'on' : ''} onClick={() => setMode('period')}>{t('report.mode_period')}</button>
       </div>
+      {mode === 'month' ? (
+        <div className="month-nav no-print">
+          <Button variant="ghost" aria-label={t('report.prev')} onClick={() => setMonth(shiftMonth(month, -1))}>‹</Button>
+          <strong data-testid="report-month">{label(month)}</strong>
+          <Button variant="ghost" aria-label={t('report.next')} disabled={month >= current} onClick={() => setMonth(shiftMonth(month, 1))}>›</Button>
+        </div>
+      ) : (
+        <div className="no-print"><PeriodPicker closes={closes.data ?? []} value={pid} onChange={setPid} /></div>
+      )}
       {q.error && <ErrorBox message={errorText(q.error)} onRetry={q.reload} />}
       {!r ? <Skeleton lines={6} /> : (
         <>

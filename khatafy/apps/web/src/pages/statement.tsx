@@ -8,8 +8,9 @@ import { useGroup } from '../lib/group';
 import { catIcon } from '../lib/cats';
 import { Button, Card, Empty, ErrorBox, Field, Logo, Skeleton } from '../components/ui';
 import { MemberShares } from '../components/shares';
+import { PeriodPicker, periodBounds } from '../components/period';
 
-type Preset = 'this' | 'last' | 'custom';
+type Preset = 'this' | 'last' | 'period' | 'custom';
 
 export function StatementPage() {
   const { t, money, date, errorText } = useT();
@@ -24,20 +25,33 @@ export function StatementPage() {
   const [applied, setApplied] = useState<{ from: string; to: string }>({ from: fromIn, to: toIn });
   const [dateErr, setDateErr] = useState(false);
   const [person, setPerson] = useState('all');
+  const [pid, setPid] = useState('current');
+  const closes = useQuery(`g:${gid}:closes`, () => api.listPeriodCloses(gid));
+  const minDate = monthRange(shiftMonth(thisMonth, -11)).from; // statements: last 12 months only
+  const maxDate = dayKey(new Date(), group.timezone);
 
+  // exact period boundaries; statements never reach back more than 12 months
+  const minTs = new Date(`${minDate}T00:00:00`).toISOString();
+  const pb = preset === 'period' && closes.data ? periodBounds(closes.data, pid) : null;
+  const pFrom = pb ? (pb.from < minTs ? minTs : pb.from) : null;
+  const pTo = pb ? pb.to : null;
+  const periodRange = useMemo(() => (pFrom && pTo ? { from: dayKey(new Date(pFrom), group.timezone), to: dayKey(new Date(Date.parse(pTo) - 1000), group.timezone) } : null), [pFrom, pTo, group.timezone]);
   const range = useMemo(() => {
     if (preset === 'this') return monthRange(thisMonth);
     if (preset === 'last') return monthRange(shiftMonth(thisMonth, -1));
+    if (preset === 'period' && periodRange) return periodRange;
     return applied;
-  }, [preset, thisMonth, applied]);
+  }, [preset, thisMonth, applied, periodRange]);
 
-  const q = useQuery(`g:${gid}:stmt:${range.from}:${range.to}`, () => api.getStatement(gid, range.from, range.to), { onSessionExpired: expireSession });
+  const q = useQuery(preset === 'period' ? (pFrom ? `g:${gid}:stmt:p:${pid}:${closes.data?.length}` : null) : `g:${gid}:stmt:${range.from}:${range.to}`,
+    () => (preset === 'period' && pFrom && pTo ? api.getStatementRange(gid, pFrom, pTo) : api.getStatement(gid, range.from, range.to)), { onSessionExpired: expireSession });
   const s = q.data;
   const pm = s && person !== 'all' ? s.members.find((m) => m.user_id === person) : undefined;
   const exps = !s ? [] : pm ? s.expenses.filter((e) => e.paid_by === person || e.splits.some((p) => p.user_id === person && p.share_paise > 0)) : s.expenses;
   const pays = !s ? [] : pm ? s.payments.filter((p) => p.from_user === person || p.to_user === person) : s.payments;
   const shareOf = (e: NonNullable<typeof s>['expenses'][number]) => e.splits.find((p) => p.user_id === person)?.share_paise ?? 0;
-  const days = Math.max(1, Math.round((Date.parse(`${range.to}T00:00:00Z`) - Date.parse(`${range.from}T00:00:00Z`)) / 86400000) + 1);
+  const firstDay = preset === 'period' && s && s.expenses.length ? s.expenses.reduce((m, e) => (e.spent_at < m ? e.spent_at : m), s.expenses[0].spent_at).slice(0, 10) : range.from;
+  const days = Math.max(1, Math.round((Date.parse(`${range.to}T00:00:00Z`) - Date.parse(`${firstDay}T00:00:00Z`)) / 86400000) + 1);
   const biggest = s?.expenses.reduce<(typeof s.expenses)[number] | undefined>((m, e) => (!m || e.amount_paise > m.amount_paise ? e : m), undefined);
   const topCat = useMemo(() => {
     const m = new Map<string, number>();
@@ -47,7 +61,7 @@ export function StatementPage() {
   const label = `Khatafy-${group.name.replace(/[^\p{L}\p{N}]+/gu, '-')}${pm ? `-${pm.full_name.replace(/[^\p{L}\p{N}]+/gu, '-')}` : ''}-${range.from}_to_${range.to}`;
 
   const show = () => {
-    if (!fromIn || !toIn || fromIn > toIn) return setDateErr(true);
+    if (!fromIn || !toIn || fromIn > toIn || fromIn < minDate || toIn > maxDate) return setDateErr(true);
     setDateErr(false); setApplied({ from: fromIn, to: toIn });
   };
   const downloadPdf = () => {
@@ -69,18 +83,20 @@ export function StatementPage() {
         </div>
       </div>
       <p className="muted small no-print">{t('stmt.pdf_hint')}</p>
+      <p className="muted small no-print">{t('stmt.limit_hint')}</p>
 
       <div className="no-print">
         <div className="tabs" role="tablist">
-          {(['this', 'last', 'custom'] as const).map((p) => (
-            <button key={p} role="tab" aria-selected={preset === p} className={preset === p ? 'on' : ''} onClick={() => setPreset(p)}>{t(p === 'this' ? 'stmt.this_month' : p === 'last' ? 'stmt.last_month' : 'stmt.custom')}</button>
+          {(['this', 'last', 'period', 'custom'] as const).map((p) => (
+            <button key={p} role="tab" aria-selected={preset === p} className={preset === p ? 'on' : ''} onClick={() => setPreset(p)}>{t(p === 'this' ? 'stmt.this_month' : p === 'last' ? 'stmt.last_month' : p === 'period' ? 'period.tab' : 'stmt.custom')}</button>
           ))}
         </div>
+        {preset === 'period' && <PeriodPicker closes={(closes.data ?? []).filter((c) => c.cut_at >= minTs)} value={pid} onChange={setPid} />}
         {preset === 'custom' && (
           <Card>
             <div className="grid grid-2 keep">
-              <Field label={t('stmt.from')} type="date" value={fromIn} onChange={(e) => setFromIn(e.target.value)} />
-              <Field label={t('stmt.to')} type="date" value={toIn} onChange={(e) => setToIn(e.target.value)} />
+              <Field label={t('stmt.from')} type="date" min={minDate} max={maxDate} value={fromIn} onChange={(e) => setFromIn(e.target.value)} />
+              <Field label={t('stmt.to')} type="date" min={minDate} max={maxDate} value={toIn} onChange={(e) => setToIn(e.target.value)} />
             </div>
             {dateErr && <p className="field-error" role="alert">{t('stmt.date_error')}</p>}
             <Button onClick={show}>{t('stmt.show')}</Button>
