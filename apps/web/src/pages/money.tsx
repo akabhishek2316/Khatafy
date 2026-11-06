@@ -9,8 +9,8 @@ import { useToast } from '../lib/toast';
 import { Link } from '../lib/router';
 import { Avatar, Badge, Button, Card, Empty, ErrorBox, Field, Modal, NetAmount, Select, Skeleton } from '../components/ui';
 
-export function PaymentModal({ groupId, initial, onClose }: { groupId: string; initial?: { from?: string; to?: string; amountPaise?: number }; onClose: () => void }) {
-  const { t, errorText } = useT();
+export function PaymentModal({ groupId, initial, onClose }: { groupId: string; initial?: { from?: string; to?: string; amountPaise?: number; kind?: 'earlier' | 'current' }; onClose: () => void }) {
+  const { t, errorText, date } = useT();
   const toast = useToast();
   const { activeMembers, me, isAdmin } = useGroup();
   const key = useRef(newId());
@@ -24,6 +24,14 @@ export function PaymentModal({ groupId, initial, onClose }: { groupId: string; i
   const [err, setErr] = useState<string | null>(null);
   const [aErr, setAErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // every payment is either for the EARLIER dues (closed period) or for the CURRENT period
+  const bal = useQuery(`g:${groupId}:balances`, () => api.getBalances(groupId));
+  const earlierOf = (id: string) => bal.data?.find((b) => b.user_id === id)?.carry_paise ?? 0;
+  const hasEarlier = !!bal.data?.some((b) => !!b.carry_paise);
+  const until = bal.data?.find((b) => b.earlier_until)?.earlier_until;
+  const when = until ? date(`${until}T12:00:00Z`) : '';
+  const [purpose, setPurpose] = useState<'earlier' | 'current'>(initial?.kind ?? 'current');
+  const choosable = !initial?.kind && hasEarlier;
 
   const submit = async () => {
     setErr(null); setAErr(null);
@@ -31,9 +39,14 @@ export function PaymentModal({ groupId, initial, onClose }: { groupId: string; i
     if (!paise) return setAErr(t('err.INVALID_AMOUNT'));
     if (!from || !to || from === to) return setErr(t('err.INVALID_PAYMENT_PARTIES'));
     if (!isAdmin && from !== me && to !== me) return setErr(t('pay.must_involve_you'));
+    if (purpose === 'earlier') {
+      const ef = earlierOf(from), et = earlierOf(to);
+      if (ef >= 0 || et <= 0) return setErr(t('err.NO_EARLIER_DUES'));
+      if (paise > Math.min(-ef, et)) return setAErr(t('err.EARLIER_AMOUNT_TOO_HIGH'));
+    }
     setBusy(true);
     try {
-      await api.recordPayment(groupId, key.current, { fromUser: from, toUser: to, amountPaise: paise, method, paidAt: new Date().toISOString(), reference: reference.trim() || null, note: note.trim() || null });
+      await api.recordPayment(groupId, key.current, { fromUser: from, toUser: to, amountPaise: paise, method, paidAt: new Date().toISOString(), reference: reference.trim() || null, note: note.trim() || null, forEarlier: purpose === 'earlier' });
       invalidate(`g:${groupId}`);
       toast.push('success', to === me ? t('pay.recorded_confirmed') : t('pay.recorded_pending'));
       onClose();
@@ -43,6 +56,13 @@ export function PaymentModal({ groupId, initial, onClose }: { groupId: string; i
   return (
     <Modal title={t('pay.record')} onClose={onClose} footer={<><Button variant="ghost" onClick={onClose}>{t('common.cancel')}</Button><Button loading={busy} onClick={submit}>{t('pay.record_btn')}</Button></>}>
       <div className="banner banner-info small">{t('pay.manual_note')}</div>
+      {choosable && (
+        <Select label={t('pay.purpose')} value={purpose} onChange={(e) => setPurpose(e.target.value as 'earlier' | 'current')}>
+          <option value="current">{t('pay.purpose_current')}</option>
+          <option value="earlier">{t('pay.purpose_earlier')}</option>
+        </Select>
+      )}
+      <div className={`banner small ${purpose === 'earlier' ? 'banner-warn' : 'banner-info'}`} role="note">{purpose === 'earlier' ? t('pay.banner_earlier', { date: when }) : t('pay.banner_current')}</div>
       <div className="grid grid-2">
         <Select label={t('pay.from')} value={from} onChange={(e) => setFrom(e.target.value)}>{activeMembers.map((m) => <option key={m.user_id} value={m.user_id}>{label(m.user_id)}</option>)}</Select>
         <Select label={t('pay.to')} value={to} onChange={(e) => setTo(e.target.value)}>{activeMembers.map((m) => <option key={m.user_id} value={m.user_id}>{label(m.user_id)}</option>)}</Select>
@@ -92,7 +112,7 @@ export function BalancesPage() {
   const per = useQuery(pid !== null && pb ? `g:${gid}:balances:p:${pid}:${closes.data?.length}` : null, () => api.getBalances(gid, pb!.from, pb!.to), { onSessionExpired: expireSession });
   const periodMode = pid !== null;
   const isCurrent = !month && !periodMode;
-  const [pay, setPay] = useState<{ from: string; to: string; amountPaise: number } | null>(null);
+  const [pay, setPay] = useState<{ from: string; to: string; amountPaise: number; kind?: 'earlier' | 'current' } | null>(null);
 
   const rows = periodMode
     ? (per.data ?? []).map((r) => ({ user_id: r.user_id, name: r.is_deleted ? t('common.deleted_user') : r.full_name, status: r.status, paid: r.paid_paise, share: r.share_paise, net: r.net_paise, carry: 0 }))
@@ -146,7 +166,7 @@ export function BalancesPage() {
             {suggestions.map((s) => (
               <li key={s.from + s.to} className="row">
                 <span>{t('pay.line', { from: nameOf(s.from), to: nameOf(s.to), amount: money(s.amountPaise) })}</span>
-                {(isAdmin || s.from === me || s.to === me) && <Button variant="secondary" onClick={() => setPay({ from: s.from, to: s.to, amountPaise: s.amountPaise })}>{t('pay.record')}</Button>}
+                {(isAdmin || s.from === me || s.to === me) && <Button variant="secondary" onClick={() => setPay({ from: s.from, to: s.to, amountPaise: s.amountPaise, kind: 'current' })}>{t('pay.record')}</Button>}
               </li>
             ))}
           </ul>
@@ -206,6 +226,7 @@ export function SettlementsPage() {
                   <div className="grow">
                     <strong>{t('pay.line', { from: p.from_name, to: p.to_name, amount: money(p.amount_paise) })}</strong>{' '}
                     <Badge tone={STATUS_TONE[p.status]}>{t(`pay.status.${p.status}`)}</Badge>
+                    <span className="small block">{p.for_earlier ? t('pay.tag_earlier') : <span className="muted">{t('pay.tag_current')}</span>}</span>
                     <span className="muted small block">{date(p.paid_at, true)} · {t(`pay.method.${p.method}`)}{p.reference ? ` · ${p.reference}` : ''}{p.note ? ` · ${p.note}` : ''}</span>
                     {p.decision_note && <span className="muted small block">{t('pay.reason_x', { reason: p.decision_note })}</span>}
                     {p.reverse_reason && <span className="muted small block">{t('pay.reason_x', { reason: p.reverse_reason })}</span>}

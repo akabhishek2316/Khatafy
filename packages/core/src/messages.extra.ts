@@ -178,7 +178,6 @@ add('earlier.title_all', 'Earlier unpaid dues', 'पिछला बाक़ी
 add('earlier.hint', 'The books up to {date} were closed, but these amounts are still unpaid. They are shown separately and are NOT mixed with new expenses.', '{date} तक का हिसाब बंद हो चुका है, पर ये रकम अभी बाक़ी हैं। ये अलग दिखती हैं और नए खर्च में नहीं जुड़तीं।');
 add('earlier.reason', 'To settle the period up to {date}', '{date} तक की अवधि का हिसाब चुकाने के लिए');
 add('earlier.balance_line', 'Earlier unpaid (separate): {amount}', 'पिछला बाक़ी (अलग): {amount}');
-add('earlier.rule', 'A payment first settles earlier dues between the same two people; the rest counts for the current period.', 'भुगतान पहले उन्हीं दो लोगों के पिछले बकाए को चुकाता है; बाक़ी रकम मौजूदा अवधि में गिनी जाती है।');
 
 // ---- v1.7.1 date/time is automatic
 add('expense.date_now', 'Now (recorded automatically)', 'अभी (अपने-आप दर्ज होगा)');
@@ -222,5 +221,19 @@ add('period.hint', 'A period runs from one close to the next. Pick the current o
 add('period.bal_hint', 'Balances for this period only: what each person paid, their share and the net for that period.', 'सिर्फ़ इस अवधि का हिसाब: हर किसी ने कितना दिया, उसका हिस्सा और इस अवधि का बाक़ी।');
 add('report.mode_month', 'Month', 'महीना');
 add('report.mode_period', 'Period', 'अवधि');
+
+// ---- v1.9.6 payments are explicit: earlier dues OR current period
+add('earlier.rule', 'Earlier dues are paid only with a payment marked "earlier dues". Every other payment counts for the current period.', 'पिछला बकाया सिर्फ़ उस भुगतान से चुकता होता है जो "पिछला बकाया" के लिए चुना गया हो। बाक़ी हर भुगतान मौजूदा अवधि में गिना जाता है।');
+add('pay.banner_current', 'This payment is for the CURRENT period. It does not change the earlier dues.', 'यह भुगतान मौजूदा अवधि के लिए है। इससे पिछला बकाया नहीं बदलेगा।');
+add('pay.banner_earlier', 'This payment is only for the EARLIER dues of the period up to {date}. It does not touch the current period.', 'यह भुगतान सिर्फ़ {date} तक की अवधि के पिछले बकाए के लिए है। इससे मौजूदा अवधि नहीं बदलेगी।');
+add('pay.purpose', 'What is this payment for?', 'यह भुगतान किसके लिए है?');
+add('pay.purpose_current', 'Current period', 'मौजूदा अवधि');
+add('pay.purpose_earlier', 'Earlier dues (closed period)', 'पिछला बकाया (बंद अवधि)');
+add('pay.tag_earlier', '⏳ For earlier dues (closed period)', '⏳ पिछले बकाए के लिए (बंद अवधि)');
+add('pay.tag_current', 'For the current period', 'मौजूदा अवधि के लिए');
+add('err.NO_EARLIER_DUES', 'These two people have no earlier dues between them. Choose "Current period".', 'इन दोनों के बीच पिछला बकाया नहीं है। "मौजूदा अवधि" चुनें।');
+add('err.EARLIER_AMOUNT_TOO_HIGH', 'The amount is more than the earlier dues between them.', 'रकम इन दोनों के बीच के पिछले बकाए से ज़्यादा है।');
+add('help.q14', 'Why are earlier dues shown separately?', 'पिछला बकाया अलग क्यों दिखता है?');
+add('help.a14', 'After a close, anything still unpaid stays in its own "earlier dues" cards. New expenses never change it. When you record a payment you choose whether it is for the earlier dues or for the current period.', 'क्लोज़ के बाद जो बाक़ी रहता है वह अपने "पिछला बकाया" कार्ड में अलग रहता है। नए खर्च उसे कभी नहीं बदलते। भुगतान दर्ज करते समय आप चुनते हैं कि वह पिछले बकाए के लिए है या मौजूदा अवधि के लिए।');
 
 export const extraMessages = d;

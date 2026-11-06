@@ -52,7 +52,7 @@ export function ClosePage() {
   const [confirm, setConfirm] = useState(false);
   const [busy, setBusy] = useState(false);
   const [only, setOnly] = useState<string | null>(null);
-  const [payFor, setPayFor] = useState<{ from: string; to: string; amountPaise: number } | null>(null);
+  const [payFor, setPayFor] = useState<{ from: string; to: string; amountPaise: number; kind?: 'earlier' | 'current' } | null>(null);
   const canClose = isAdmin && !archived;
   const prev = useQuery(canClose && end ? `g:${gid}:closeprev:${end}` : null, () => api.previewPeriodClose(gid, end));
   const day = (d: string) => date(`${d}T12:00:00Z`);

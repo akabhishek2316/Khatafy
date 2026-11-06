@@ -96,7 +96,7 @@ export function createApi(client: RpcClient) {
     recordPayment: (groupId: string, idempotencyKey: string, p: T.PaymentInput) =>
       call<string>('record_payment', {
         p_group_id: groupId, p_idempotency_key: idempotencyKey, p_from_user: p.fromUser, p_to_user: p.toUser,
-        p_amount_paise: p.amountPaise, p_method: p.method, p_paid_at: p.paidAt, p_reference: p.reference ?? null, p_note: p.note ?? null,
+        p_amount_paise: p.amountPaise, p_method: p.method, p_paid_at: p.paidAt, p_reference: p.reference ?? null, p_note: p.note ?? null, p_for_earlier: p.forEarlier ?? false,
       }),
     updatePaymentStatus: (paymentId: string, action: 'confirm' | 'reject' | 'cancel' | 'reverse', note?: string | null) =>
       call('update_payment_status', { p_payment_id: paymentId, p_action: action, p_note: note ?? null }),

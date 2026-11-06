@@ -54,7 +54,7 @@ export interface Payment {
   id: string; from_user: string; from_name: string; to_user: string; to_name: string; amount_paise: number;
   method: PaymentMethod; paid_at: string; reference: string | null; note: string | null; status: PaymentStatus;
   created_by: string; decided_by: string | null; decided_at: string | null; decision_note: string | null;
-  reverse_reason: string | null; created_at: string; receiver_active: boolean;
+  reverse_reason: string | null; created_at: string; receiver_active: boolean; for_earlier?: boolean;
 }
 export interface LedgerEntry {
   kind: 'expense' | 'payment_out' | 'payment_in'; id: string; title: string; occurred_at: string;
@@ -87,7 +87,7 @@ export interface ExpenseInput {
   splitMode: SplitMode; participants: Array<{ userId: string; amountPaise?: number; percentBps?: number }>; note?: string | null;
 }
 export interface PaymentInput {
-  fromUser: string; toUser: string; amountPaise: number; method: PaymentMethod; paidAt: string; reference?: string | null; note?: string | null;
+  fromUser: string; toUser: string; amountPaise: number; method: PaymentMethod; paidAt: string; reference?: string | null; note?: string | null; forEarlier?: boolean;
 }
 
 export interface Statement {

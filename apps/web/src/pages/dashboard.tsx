@@ -22,7 +22,7 @@ export function DashboardPage() {
   const pend = useQuery(`g:${gid}:pending-pay`, () => api.listPayments(gid, { status: 'pending', limit: 50 }), { onSessionExpired: expireSession });
   const notices = useQuery(`g:${gid}:notices`, () => api.listNotices(gid), { onSessionExpired: expireSession });
   const cats = useQuery('cats', () => api.listCategories());
-  const [payFor, setPayFor] = useState<{ from: string; to: string; amountPaise: number } | null>(null);
+  const [payFor, setPayFor] = useState<{ from: string; to: string; amountPaise: number; kind?: 'earlier' | 'current' } | null>(null);
 
   const mine = bal.data?.find((b) => b.user_id === me);
   const cur = ov.data?.current;
@@ -108,7 +108,7 @@ export function DashboardPage() {
             {suggestions.map((s) => (
               <li key={s.from + s.to} className="row">
                 <span>{s.from === me ? t('dash.you_pay', { to: nameOf(s.to), amount: money(s.amountPaise) }) : t('dash.pays_you', { from: nameOf(s.from), amount: money(s.amountPaise) })}</span>
-                <Button variant="secondary" onClick={() => setPayFor({ from: s.from, to: s.to, amountPaise: s.amountPaise })}>{t('pay.record')}</Button>
+                <Button variant="secondary" onClick={() => setPayFor({ from: s.from, to: s.to, amountPaise: s.amountPaise, kind: 'current' })}>{t('pay.record')}</Button>
               </li>
             ))}
           </ul>
