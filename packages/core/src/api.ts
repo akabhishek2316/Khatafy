@@ -102,6 +102,8 @@ export function createApi(client: RpcClient) {
       call('update_payment_status', { p_payment_id: paymentId, p_action: action, p_note: note ?? null }),
     sendReminder: (groupId: string, toUser: string) => call('send_payment_reminder', { p_group_id: groupId, p_to_user: toUser }),
     getStatement: (groupId: string, from: string, to: string) => call<T.Statement>('get_group_statement', { p_group_id: groupId, p_from: from, p_to: to }),
+    getReportRange: (groupId: string, from: string, to: string) => call<T.Report>('get_group_report_range', { p_group_id: groupId, p_from: from, p_to: to }),
+    getStatementRange: (groupId: string, from: string, to: string) => call<T.Statement>('get_group_statement_range', { p_group_id: groupId, p_from: from, p_to: to }),
     getReport: (groupId: string, month: string) => call<T.Report>('get_group_report', { p_group_id: groupId, p_month: month }),
     listBudgets: (groupId: string) => call<T.Budget[]>('list_group_budgets', { p_group_id: groupId }),
     setBudget: (groupId: string, categoryKey: string | null, amountPaise: number) =>
@@ -110,6 +112,10 @@ export function createApi(client: RpcClient) {
     // ---- notifications
     listNotifications: (beforeId?: number | null) => call<T.NotificationPage>('list_notifications', { p_limit: 30, p_before_id: beforeId ?? null }),
     markNotificationsRead: (ids: number[] | null = null) => call('mark_notifications_read', { p_ids: ids }),
+    getPeriodOverview: (groupId: string) => call<T.PeriodOverview>('get_period_overview', { p_group_id: groupId }),
+    listPeriodCloses: (groupId: string) => call<T.PeriodClose[]>('list_period_closes', { p_group_id: groupId }),
+    previewPeriodClose: (groupId: string, periodEnd: string) => call<T.CloseSummary>('preview_period_close', { p_group_id: groupId, p_period_end: periodEnd }),
+    closePeriod: (groupId: string, periodEnd: string) => call<string>('close_period', { p_group_id: groupId, p_period_end: periodEnd }),
     deleteNotifications: (ids: number[] | null = null) => call<number>('delete_notifications', { p_ids: ids }),
     // ---- app status + platform admin (aggregate-only, see migration 0011)
     getAppStatus: () => call<{ maintenance: boolean; announcement: string }>('get_app_status'),

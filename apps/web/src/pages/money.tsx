@@ -33,7 +33,7 @@ export function PaymentModal({ groupId, initial, onClose }: { groupId: string; i
     if (!isAdmin && from !== me && to !== me) return setErr(t('pay.must_involve_you'));
     setBusy(true);
     try {
-      await api.recordPayment(groupId, key.current, { fromUser: from, toUser: to, amountPaise: paise, method, paidAt: localInputToIso(paidAt), reference: reference.trim() || null, note: note.trim() || null });
+      await api.recordPayment(groupId, key.current, { fromUser: from, toUser: to, amountPaise: paise, method, paidAt: new Date().toISOString(), reference: reference.trim() || null, note: note.trim() || null });
       invalidate(`g:${groupId}`);
       toast.push('success', to === me ? t('pay.recorded_confirmed') : t('pay.recorded_pending'));
       onClose();
@@ -52,7 +52,7 @@ export function PaymentModal({ groupId, initial, onClose }: { groupId: string; i
         <Select label={t('pay.method')} value={method} onChange={(e) => setMethod(e.target.value as PaymentMethod)}>
           {(['upi', 'cash', 'bank', 'other'] as const).map((m) => <option key={m} value={m}>{t(`pay.method.${m}`)}</option>)}
         </Select>
-        <Field label={t('expense.date')} type="datetime-local" value={paidAt} onChange={(e) => setPaidAt(e.target.value)} />
+        <Field label={t('expense.date')} value={t('expense.date_now')} readOnly disabled hint={t('expense.date_hint')} />
       </div>
       <Field label={t('pay.reference')} value={reference} onChange={(e) => setReference(e.target.value)} maxLength={100} hint={t('pay.reference_hint')} />
       <Field label={t('expense.note')} value={note} onChange={(e) => setNote(e.target.value)} maxLength={300} />
@@ -62,6 +62,19 @@ export function PaymentModal({ groupId, initial, onClose }: { groupId: string; i
 }
 
 import { MemberShares } from '../components/shares';
+import { EarlierDues } from '../components/earlier';
+import { PeriodPicker, periodBounds } from '../components/period';
+
+function BalanceTabs({ active }: { active: 'balances' | 'payments' }) {
+  const { t } = useT();
+  const { group } = useGroup();
+  return (
+    <nav className="subnav" aria-label={t('nav.balances')}>
+      <Link to={`/g/${group.id}/balances`} className={active === 'balances' ? 'on' : ''} aria-current={active === 'balances' ? 'page' : undefined}>⚖️ {t('nav.balances')}</Link>
+      <Link to={`/g/${group.id}/settlements`} className={active === 'payments' ? 'on' : ''} aria-current={active === 'payments' ? 'page' : undefined}>💸 {t('nav.settlements')}</Link>
+    </nav>
+  );
+}
 
 export function BalancesPage() {
   const { t, money, errorText } = useT();
@@ -73,28 +86,40 @@ export function BalancesPage() {
   const [month, setMonth] = useState<string | null>(null); // null = lifetime
   const life = useQuery(`g:${gid}:balances`, () => api.getBalances(gid), { onSessionExpired: expireSession });
   const rep = useQuery(month ? `g:${gid}:report:${month}` : null, () => api.getReport(gid, monthToDate(month!)), { onSessionExpired: expireSession });
+  const [pid, setPid] = useState<string | null>(null); // closed-period / current-period view
+  const closes = useQuery(`g:${gid}:closes`, () => api.listPeriodCloses(gid));
+  const pb = pid !== null && closes.data ? periodBounds(closes.data, pid) : null;
+  const per = useQuery(pid !== null && pb ? `g:${gid}:balances:p:${pid}:${closes.data?.length}` : null, () => api.getBalances(gid, pb!.from, pb!.to), { onSessionExpired: expireSession });
+  const periodMode = pid !== null;
+  const isCurrent = !month && !periodMode;
   const [pay, setPay] = useState<{ from: string; to: string; amountPaise: number } | null>(null);
 
-  const rows = month
-    ? (rep.data?.by_member ?? []).map((r) => ({ user_id: r.user_id, name: nameOf(r.user_id), status: r.status, paid: r.paid_paise, share: r.share_paise, net: r.net_paise }))
-    : (life.data ?? []).map((r) => ({ user_id: r.user_id, name: r.is_deleted ? t('common.deleted_user') : r.full_name, status: r.status, paid: r.paid_paise, share: r.share_paise, net: r.net_paise }));
-  const loading = month ? rep.loading && !rep.data : life.loading && !life.data;
-  const error = month ? rep.error : life.error;
-  const suggestions = useMemo(() => suggestSettlements((life.data ?? []).map((b) => ({ userId: b.user_id, netPaise: b.net_paise }))), [life.data]);
+  const rows = periodMode
+    ? (per.data ?? []).map((r) => ({ user_id: r.user_id, name: r.is_deleted ? t('common.deleted_user') : r.full_name, status: r.status, paid: r.paid_paise, share: r.share_paise, net: r.net_paise, carry: 0 }))
+    : month
+    ? (rep.data?.by_member ?? []).map((r) => ({ user_id: r.user_id, name: nameOf(r.user_id), status: r.status, paid: r.paid_paise, share: r.share_paise, net: r.net_paise, carry: 0 }))
+    : (life.data ?? []).map((r) => ({ user_id: r.user_id, name: r.is_deleted ? t('common.deleted_user') : r.full_name, status: r.status, paid: r.paid_paise, share: r.share_paise, net: r.current_paise ?? r.net_paise, carry: r.carry_paise ?? 0 }));
+  const loading = periodMode ? per.loading && !per.data : month ? rep.loading && !rep.data : life.loading && !life.data;
+  const error = periodMode ? per.error : month ? rep.error : life.error;
+  const suggestions = useMemo(() => suggestSettlements((life.data ?? []).map((b) => ({ userId: b.user_id, netPaise: b.current_paise ?? b.net_paise }))), [life.data]);
 
   const remind = async (uid: string) => {
     try { await api.sendReminder(gid, uid); toast.push('success', t('bal.reminded')); } catch (x) { toast.push('error', errorText(x)); }
   };
   return (
     <>
+      <BalanceTabs active="balances" />
       <h1>{t('nav.balances')}</h1>
       <div className="tabs" role="tablist">
-        <button role="tab" aria-selected={month === null} className={month === null ? 'on' : ''} onClick={() => setMonth(null)}>{t('bal.lifetime')}</button>
-        <button role="tab" aria-selected={month !== null} className={month !== null ? 'on' : ''} onClick={() => setMonth(thisMonth)}>{t('bal.monthly')}</button>
+        <button role="tab" aria-selected={isCurrent} className={isCurrent ? 'on' : ''} onClick={() => { setMonth(null); setPid(null); }}>{t('bal.lifetime')}</button>
+        <button role="tab" aria-selected={month !== null} className={month !== null ? 'on' : ''} onClick={() => { setPid(null); setMonth(thisMonth); }}>{t('bal.monthly')}</button>
+        <button role="tab" aria-selected={periodMode} className={periodMode ? 'on' : ''} onClick={() => { setMonth(null); setPid('current'); }}>{t('period.tab')}</button>
       </div>
+      {periodMode && <PeriodPicker closes={closes.data ?? []} value={pid ?? 'current'} onChange={setPid} />}
       {month !== null && <Field label={t('report.month')} type="month" value={month} max={thisMonth} onChange={(e) => e.target.value && setMonth(e.target.value)} />}
-      <p className="muted small">{month ? t('bal.monthly_hint') : t('bal.lifetime_hint')}</p>
-      {error && <ErrorBox message={errorText(error)} onRetry={() => (month ? rep.reload() : life.reload())} />}
+      <p className="muted small">{periodMode ? t('period.bal_hint') : month ? t('bal.monthly_hint') : t('bal.lifetime_hint')}</p>
+      {error && <ErrorBox message={errorText(error)} onRetry={() => (periodMode ? per.reload() : month ? rep.reload() : life.reload())} />}
+      {isCurrent && life.data && <EarlierDues rows={life.data} me={me} nameOf={nameOf} archived={archived} isAdmin={isAdmin} mine={false} onPay={setPay} />}
       {loading ? <Skeleton lines={4} /> : rows.length === 0 ? <Empty icon="⚖️" title={t('bal.empty')} /> : (
         <Card>
           <ul className="list">
@@ -106,14 +131,15 @@ export function BalancesPage() {
                   <span className="muted small block">{t('bal.paid_share', { paid: money(r.paid), share: money(r.share) })}</span>
                 </span>
                 <NetAmount paise={r.net} />
-                {!month && r.net < 0 && r.user_id !== me && r.status === 'active' && !archived && <Button variant="ghost" onClick={() => remind(r.user_id)}>🔔 {t('bal.remind')}</Button>}
+                {isCurrent && !!r.carry && <span className="muted small block">{t('earlier.balance_line', { amount: money(r.carry, { sign: true }) })}</span>}
+                {isCurrent && r.net < 0 && r.user_id !== me && r.status === 'active' && !archived && <Button variant="ghost" onClick={() => remind(r.user_id)}>🔔 {t('bal.remind')}</Button>}
               </li>
             ))}
           </ul>
         </Card>
       )}
       {!loading && rows.length > 0 && <MemberShares me={me} total={rows.reduce((a, r) => a + r.share, 0)} rows={rows.map((r) => ({ id: r.user_id, name: r.name, share: r.share, paid: r.paid, status: r.status }))} />}
-      {!month && suggestions.length > 0 && !archived && (
+      {isCurrent && suggestions.length > 0 && !archived && (
         <Card title={t('bal.suggestions')}>
           <p className="muted small">{t('bal.suggestions_hint')}</p>
           <ul className="list">
@@ -126,7 +152,7 @@ export function BalancesPage() {
           </ul>
         </Card>
       )}
-      {!month && suggestions.length === 0 && life.data && life.data.length > 0 && <Card><p>✅ {t('bal.all_settled')}</p></Card>}
+      {isCurrent && suggestions.length === 0 && life.data && life.data.length > 0 && <Card><p>✅ {t('bal.all_settled')}</p></Card>}
       {pay && <PaymentModal groupId={gid} initial={pay} onClose={() => setPay(null)} />}
     </>
   );
@@ -160,6 +186,7 @@ export function SettlementsPage() {
 
   return (
     <>
+      <BalanceTabs active="payments" />
       <div className="page-head"><h1>{t('nav.settlements')}</h1>{!archived && <Button onClick={() => setOpen(true)}>＋ {t('pay.record')}</Button>}</div>
       <div className="banner banner-info small">{t('pay.manual_note')}</div>
       <Select label={t('pay.status_filter')} value={status} onChange={(e) => setStatus(e.target.value)}>

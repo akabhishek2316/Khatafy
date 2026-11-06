@@ -121,4 +121,106 @@ add('stmt.person_empty', 'No expenses for this person in this period.', 'इस 
 add('stmt.their_share', 'Share', 'हिस्सा');
 add('stmt.for_person', 'Statement for {name}', '{name} का स्टेटमेंट');
 
+// ---- v1.3 auto-delete (retention)
+
+// ---- v1.4 settle & close (replaces auto-delete)
+add('nav.close', 'Close & history', 'हिसाब बंद और इतिहास');
+add('close.title', 'Settle & close', 'हिसाब बंद करें');
+add('close.new_title', 'Close a period', 'एक अवधि बंद करें');
+add('close.end_date', 'Close up to (date)', 'इस तारीख़ तक बंद करें');
+add('close.history', 'Settled history', 'हिसाब का इतिहास');
+add('close.none', 'No closed periods yet.', 'अभी कोई अवधि बंद नहीं हुई।');
+add('close.period', 'Period', 'अवधि');
+add('close.total', 'Total spent', 'कुल खर्च');
+add('close.count', 'Expenses', 'खर्च');
+add('close.per_head', 'Per head (average)', 'प्रति व्यक्ति (औसत)');
+add('close.col_member', 'Member', 'सदस्य');
+add('close.col_paid', 'Paid', 'दिया');
+add('close.col_share', 'Share', 'हिस्सा');
+add('close.col_net', 'Balance', 'बाक़ी');
+add('close.payments', 'Payments made', 'किए गए भुगतान');
+add('close.dues', 'Dues carried forward', 'आगे जुड़ा बकाया');
+add('close.no_dues', 'Everyone was settled.', 'सब बराबर था।');
+add('close.pays', '{from} to pay {to}: {amount}', '{from} को {to} को {amount} देने हैं');
+add('close.pdf', '⬇ PDF', '⬇ PDF');
+add('close.prev_balance', 'Includes earlier balance {amount}', 'पिछला बकाया शामिल: {amount}');
+add('err.INVALID_CLOSE_DATE', 'Choose a date that is not in the future and is after the last closed period.', 'ऐसी तारीख़ चुनें जो भविष्य की न हो और पिछली बंद अवधि के बाद की हो।');
+add('err.NOTHING_TO_CLOSE', 'There are no expenses up to that date.', 'उस तारीख़ तक कोई खर्च नहीं है।');
+add('err.PERIOD_CLOSED', 'This date falls in a closed period. Use a later date.', 'यह तारीख़ बंद हो चुकी अवधि में है। बाद की तारीख़ चुनें।');
+add('help.q10', 'What does "Close & history" do?', '"हिसाब बंद और इतिहास" क्या करता है?');
+
+// ---- v1.6 close = save summary (nothing deleted); 12-month monthly cleanup
+add('close.intro', 'Close the books up to a date. A summary is saved in History and you can download its PDF any time. Closed expenses stop showing in Expenses, and dates up to the close cannot be changed. Any amount still unpaid stays in Balances as an earlier balance.', 'किसी तारीख़ तक हिसाब बंद करें। सारांश इतिहास में सेव हो जाता है और उसका PDF कभी भी डाउनलोड कर सकते हैं। बंद खर्च अब खर्च वाले पेज में नहीं दिखते, और बंद तारीख़ों तक कुछ बदला नहीं जा सकता। जो रकम अभी बाक़ी है वह बैलेंस में पिछले बकाए के रूप में रहती है।');
+add('close.preview_title', 'What will be closed', 'क्या बंद होगा');
+add('close.request', 'Close now', 'अभी बंद करें');
+add('close.confirm_title', 'Close the books?', 'हिसाब बंद करें?');
+add('close.confirm_text', 'Everything up to {date} will be closed and saved in History. It will no longer show in Expenses and nothing can be added or changed for those dates. This cannot be undone.', '{date} तक सब कुछ बंद होकर इतिहास में सेव हो जाएगा। वह खर्च वाले पेज में नहीं दिखेगा और उन तारीख़ों के लिए कुछ जोड़ा या बदला नहीं जा सकेगा। यह वापस नहीं होगा।');
+add('close.final_note', 'Saved summary of this closed period.', 'इस बंद अवधि का सेव किया हुआ सारांश।');
+add('close.closed_on', 'Closed on {date} by {name}', '{date} को {name} ने बंद किया');
+add('close.keep_note', 'Closed periods are kept for the last 12 months, then removed in the monthly cleanup.', 'बंद अवधियाँ पिछले 12 महीने तक रखी जाती हैं, फिर मासिक सफ़ाई में हट जाती हैं।');
+add('notif.close_done', '{name} closed the books up to {date}. The summary is in Close & history.', '{name} ने {date} तक हिसाब बंद कर दिया। सारांश "हिसाब बंद और इतिहास" में है।');
+add('bal.lifetime', 'Current', 'अभी का');
+add('bal.lifetime_hint', 'What each person gets or owes now, after the last close. Earlier unpaid amounts are shown separately.', 'हर किसी को अभी कितना मिलना या देना है, पिछले क्लोज़ के बाद। पहले का बाक़ी अलग से दिखता है।');
+add('stmt.limit_hint', 'Statements are available for the last 12 months only. Older data is removed in the monthly cleanup.', 'स्टेटमेंट सिर्फ़ पिछले 12 महीनों के मिलते हैं। उससे पुराना डेटा मासिक सफ़ाई में हट जाता है।');
+add('help.a10', 'An admin closes the books up to a date after a confirmation. A summary (total, per-head, who paid whom) is saved in History with a PDF. Closed expenses leave the Expenses page, but nothing is deleted at that time. Data older than the last 12 months is removed on the last day of each month.', 'एडमिन पुष्टि के बाद किसी तारीख़ तक हिसाब बंद करता है। सारांश (कुल, प्रति व्यक्ति, किसने किसे चुकाया) PDF के साथ इतिहास में सेव होता है। बंद खर्च खर्च वाले पेज से हट जाते हैं, पर उस समय कुछ डिलीट नहीं होता। पिछले 12 महीनों से पुराना डेटा हर महीने की आख़िरी तारीख़ को हट जाता है।');
+
+// ---- v1.6.1 payer is always the person adding the expense
+add('expense.paid_by_hint', 'Expenses are always recorded as paid by you.', 'खर्च हमेशा आपके नाम से, यानी आपने दिया, ऐसे दर्ज होता है।');
+add('err.PAYER_MUST_BE_YOU', 'You can only add expenses that you paid yourself.', 'आप सिर्फ़ वही खर्च जोड़ सकते हैं जो आपने खुद दिया हो।');
+add('err.PAYER_CHANGE_NOT_ALLOWED', 'The person who paid cannot be changed.', 'किसने दिया, यह बदला नहीं जा सकता।');
+add('help.q11', 'Can I add an expense on behalf of someone else?', 'क्या मैं किसी और की तरफ़ से खर्च जोड़ सकता/सकती हूँ?');
+add('help.a11', 'No. Everyone adds only the expenses they paid themselves, from their own account. You choose who shares the expense, but the payer is always you.', 'नहीं। हर कोई सिर्फ़ वही खर्च अपने खाते से जोड़ता है जो उसने खुद दिया हो। खर्च में किनका हिस्सा है यह आप चुनते हैं, पर देने वाला हमेशा आप ही होते हैं।');
+
+// ---- v1.7 earlier (closed-period) dues shown separately
+add('earlier.title_pay', 'Earlier dues: you need to pay', 'पिछला बकाया: आपको देना है');
+add('earlier.title_get', 'Earlier dues: you will get', 'पिछला बकाया: आपको मिलना है');
+add('earlier.title_all', 'Earlier unpaid dues', 'पिछला बाक़ी बकाया');
+add('earlier.hint', 'The books up to {date} were closed, but these amounts are still unpaid. They are shown separately and are NOT mixed with new expenses.', '{date} तक का हिसाब बंद हो चुका है, पर ये रकम अभी बाक़ी हैं। ये अलग दिखती हैं और नए खर्च में नहीं जुड़तीं।');
+add('earlier.reason', 'To settle the period up to {date}', '{date} तक की अवधि का हिसाब चुकाने के लिए');
+add('earlier.balance_line', 'Earlier unpaid (separate): {amount}', 'पिछला बाक़ी (अलग): {amount}');
+add('earlier.rule', 'A payment first settles earlier dues between the same two people; the rest counts for the current period.', 'भुगतान पहले उन्हीं दो लोगों के पिछले बकाए को चुकाता है; बाक़ी रकम मौजूदा अवधि में गिनी जाती है।');
+
+// ---- v1.7.1 date/time is automatic
+add('expense.date_now', 'Now (recorded automatically)', 'अभी (अपने-आप दर्ज होगा)');
+add('expense.date_hint', 'Date and time are set automatically and cannot be changed.', 'तारीख़ और समय अपने-आप लगते हैं और बदले नहीं जा सकते।');
+add('help.q12', 'Can I choose a different date or time for an expense?', 'क्या मैं खर्च की तारीख़ या समय बदल सकता/सकती हूँ?');
+add('help.a12', 'No. An expense is saved with the current date and time and it cannot be changed later, so records stay honest. If you made a mistake, void the expense and add it again.', 'नहीं। खर्च मौजूदा तारीख़ और समय के साथ सेव होता है और बाद में बदला नहीं जा सकता, ताकि रिकॉर्ड सही रहें। गलती हो तो खर्च रद्द करके दोबारा जोड़ें।');
+
+add('help.q13', 'Can I choose the date or time of a payment?', 'क्या मैं भुगतान की तारीख़ या समय चुन सकता/सकती हूँ?');
+add('help.a13', 'No. A payment is saved with the current date and time and cannot be changed. This keeps the records honest and works correctly after a close.', 'नहीं। भुगतान मौजूदा तारीख़ और समय के साथ सेव होता है और बदला नहीं जा सकता। इससे रिकॉर्ड सही रहते हैं और क्लोज़ के बाद भी सही चलता है।');
+
+// ---- v1.8 Home + Close & history: current period vs last closed period
+add('home.current_title', 'Current period', 'मौजूदा अवधि');
+add('home.since', 'Since {date} (after the last close)', '{date} से (पिछले क्लोज़ के बाद)');
+add('home.since_start', 'Since the beginning (nothing closed yet)', 'शुरू से (अभी कुछ बंद नहीं हुआ)');
+add('home.current_total', 'Total spent', 'कुल खर्च');
+add('home.my_share', 'My share', 'मेरा हिस्सा');
+add('home.i_paid', 'I paid', 'मैंने दिया');
+add('home.view_expenses', 'View expenses →', 'खर्च देखें →');
+add('home.last_title', 'Last closed period', 'पिछली बंद अवधि');
+add('home.last_period', '{from} – {to}', '{from} – {to}');
+add('home.last_none', 'No period has been closed yet.', 'अभी कोई अवधि बंद नहीं हुई।');
+add('home.last_none_hint', 'When an admin closes the books, the summary of that period shows here.', 'जब एडमिन हिसाब बंद करेगा, तो उस अवधि का सारांश यहाँ दिखेगा।');
+add('home.last_my_balance', 'My balance at close', 'क्लोज़ पर मेरा बाक़ी');
+add('home.last_still', 'Still unpaid from then', 'तब का अभी भी बाक़ी');
+add('home.view_history', 'Close & history →', 'हिसाब बंद और इतिहास →');
+add('close.current_title', 'Current period (open)', 'मौजूदा अवधि (चालू)');
+add('close.current_hint', 'Everything after the last close. This is the live record and it keeps changing until the next close.', 'पिछले क्लोज़ के बाद का सब कुछ। यह चालू रिकॉर्ड है और अगले क्लोज़ तक बदलता रहेगा।');
+add('close.current_bal', 'Balance (this period)', 'बाक़ी (इस अवधि का)');
+add('close.earlier_title', 'Earlier record: unpaid from closed periods', 'पिछला रिकॉर्ड: बंद अवधियों का बाक़ी');
+add('close.earlier_hint', 'These are kept separate from the current period.', 'ये मौजूदा अवधि से अलग रखे जाते हैं।');
+add('close.latest', 'Latest', 'सबसे नया');
+add('close.compact_preview', 'If you close now: total {total}, {count} expenses, {head} per head', 'अभी बंद करने पर: कुल {total}, {count} खर्च, प्रति व्यक्ति {head}');
+add('close.dues_at_close', 'Dues at close', 'क्लोज़ पर बाक़ी');
+add('close.no_payments', 'No payments in this period.', 'इस अवधि में कोई भुगतान नहीं।');
+
+// ---- v1.9 period-wise (close-wise) views
+add('period.current', 'Current period (open)', 'मौजूदा अवधि (चालू)');
+add('period.pick', 'Period', 'अवधि');
+add('period.tab', 'Period', 'अवधि');
+add('period.hint', 'A period runs from one close to the next. Pick the current one or any closed period.', 'एक अवधि एक क्लोज़ से अगले क्लोज़ तक चलती है। मौजूदा या कोई भी बंद अवधि चुनें।');
+add('period.bal_hint', 'Balances for this period only: what each person paid, their share and the net for that period.', 'सिर्फ़ इस अवधि का हिसाब: हर किसी ने कितना दिया, उसका हिस्सा और इस अवधि का बाक़ी।');
+add('report.mode_month', 'Month', 'महीना');
+add('report.mode_period', 'Period', 'अवधि');
+
 export const extraMessages = d;

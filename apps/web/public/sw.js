@@ -1,6 +1,6 @@
 // Khatafy service worker: caches the app shell so it opens offline. API calls (Supabase) are never cached.
-const CACHE = 'khatafy-shell-v2';
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png'];
+const CACHE = 'khatafy-shell-v3';
+const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon-192.png?v=3'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

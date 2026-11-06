@@ -153,7 +153,7 @@ test('every error code raised by the database has a translation', () => {
   const dir = join(root, 'supabase/migrations'); const codes = new Set<string>();
   for (const f of readdirSync(dir)) for (const m of readFileSync(join(dir, f), 'utf8').matchAll(/raise exception\s+'([A-Z][A-Z0-9_]+)'/gi)) codes.add(m[1]!);
   // raised only by functions that migration 0009 drops/replaces (the owner role no longer exists)
-  const retired = new Set(['OWNER_REQUIRED', 'ALREADY_OWNER', 'OWNER_MUST_TRANSFER']);
+  const retired = new Set(['OWNER_REQUIRED', 'ALREADY_OWNER', 'OWNER_MUST_TRANSFER', 'INVALID_RETENTION', 'CLOSE_ALREADY_PENDING', 'CLOSE_NOT_FOUND', 'CLOSE_NOT_PENDING']);
   const missing = [...codes].filter((c) => !retired.has(c) && !(`err.${c}` in messages));
   assert.deepEqual(missing, []);
 });

@@ -44,6 +44,7 @@ export const notificationMessages: Dict = {
   'act.request.approved': { en: '{actor} approved a join request', hi: '{actor} ने जॉइन अनुरोध मंज़ूर किया' },
   'act.request.rejected': { en: '{actor} declined a join request', hi: '{actor} ने जॉइन अनुरोध अस्वीकार किया' },
   'act.group.created': { en: 'Group created', hi: 'ग्रुप बनाया गया' },
+  'act.period_closed': { en: '{actor} closed the books (period closed)', hi: '{actor} ने हिसाब बंद किया (अवधि बंद)' },
   'act.group.updated': { en: '{actor} updated the group', hi: '{actor} ने ग्रुप अपडेट किया' },
   'act.group.archived': { en: '{actor} archived the group', hi: '{actor} ने ग्रुप आर्काइव किया' },
   'act.unknown': { en: 'Group activity', hi: 'ग्रुप की गतिविधि' },
@@ -72,6 +73,8 @@ export function notificationText(n: AppNotification, t: Translator): { text: str
     case 'payment_pending': case 'payment_recorded': case 'payment_confirmed': case 'payment_rejected':
     case 'payment_cancelled': case 'payment_reversed': case 'payment_reminder':
       return { text: t(`notif.${n.type}`, { ...base, amount: n.type === 'payment_reminder' ? money(p.owed_paise) : base.amount! }), path: g ? `/g/${g}/${n.type === 'payment_reminder' ? 'balances' : 'settlements'}` : null };
+    case 'close_done':
+      return { text: t(`notif.${n.type}`, { ...base, date: String(p.period_end ?? '') }), path: g ? `/g/${g}/close` : null };
     case 'join_request':
       return { text: t('notif.join_request', base), path: g ? `/g/${g}/requests` : null };
     case 'join_approved': case 'admin_granted':

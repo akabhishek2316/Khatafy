@@ -9,7 +9,7 @@ export function HelpPage() {
       <h1>{t('help.title')}</h1>
       <p className="muted">{t('help.sub')}</p>
       <Card>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map((n) => (
           <details key={n} className="faq">
             <summary>{t(`help.q${n}`)}</summary>
             <p>{t(`help.a${n}`)}</p>

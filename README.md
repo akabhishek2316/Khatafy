@@ -21,6 +21,28 @@ Hindi + English, INR (₹), paise-level accurate hisab, admin-approval se group 
 
 **v1.1.1:** header se language/theme button hata diye (ab Profile menu → Language & theme me hain). Help & FAQs aur Log out ab menu aur More page dono me baaki list jaisi rows hain; Log out laal rang aur exit icon ke saath. Change password page par pehle *current password* verify hota hai.
 
+**v1.2:** sirf PDF download (JSON/CSV hata diye), Statement me person-wise filter + useful stats, Home se extra links hata diye, Settings danger zone theek, naya + button, mobile par chhota font, "You need to pay ..." wording.
+
+**v1.6 (current):** Close no longer deletes anything and has no waiting/objection window. Admin picks a date -> sees a preview -> confirms once -> a summary is saved in "Close & history" (PDF per close). Expenses shows only open (not closed) expenses; Balances show the current position (records after the last close; unpaid earlier dues appear separately as "earlier balance"). Statements: last 12 months only. On the LAST DAY of every month a cleanup deletes everything older than the last 12 months (expenses, payments, receipts, closed-period summaries) and keeps unpaid balances. Run, in order: `0013` (if never run), `0014` (if never run), `0016_close_no_delete_monthly_cleanup.sql` (0016 replaces the 0014 review flow (the old 0015 file was removed)).
+1. Enable **pg_cron** (Dashboard -> Integrations -> Cron) and re-run 0016 if it printed "pg_cron is not enabled". The monthly job runs 28th-31st at 22:00 IST and acts only on the real last day of the month.
+2. Deploy the Edge Function `supabase/functions/purge-receipts` (see its header) so receipt FILES of cleaned-up expenses are removed from Storage.
+3. Test on a throw-away group: add expenses, close, check Expenses is empty and Balances current; to test cleanup: `select public.kh_monthly_cleanup(true);` (data older than 12 months is deleted; set an expense date >12 months back first).
+4. Privacy Policy / Terms updated. **Have a lawyer review them.**
+
+**v1.5 (cleaner screens, no duplicate data):**
+- Home: one summary card (balance + this month + my share), pending confirmations, settle-up, last 3 expenses. Removed the per-person share card and budget card.
+- Balances and Payments are now one place (two tabs). Members page holds Requests and Invitations. Activity moved into Settings.
+- More menu: Reports, Statement, Close & history, Shopping list, Notices, Settings, Profile, Help.
+- Removed duplicates: Statement "who paid whom" table, Reports "by member" table. Per-person share now shows in Balances and Statement only.
+- Old links (`/settlements`, `/requests`, `/invitations`) still work, so notifications and bookmarks do not break.
+- No database change in v1.5.
+
+**v1.4 (Settle & close, replaces the 6/9/12-month auto-delete):** an admin closes the books up to a date once members have settled. 3-day review (any member can object, admin can cancel) -> summary kept ("Settled history": total, per-head, paid/share, who paid whom) -> detailed expenses/payments deleted -> unpaid dues carried forward as "earlier balance". Closed dates become read-only. Run, in order: `0013` (only if not run before) then `supabase/migrations/0014_period_close.sql` (it also removes the retention objects from 0013).
+1. Enable **pg_cron** (Dashboard -> Integrations -> Cron), then re-run 0014 if it printed "pg_cron is not enabled". The finalising job runs daily at 03:00 IST.
+2. Receipt **files** are removed only through the Storage API: deploy the Edge Function `supabase/functions/purge-receipts` (steps in its header; needs a `CRON_SECRET`; schedule it daily in Dashboard -> Cron). Until then, receipt files of closed periods stay in storage (unreachable from the app, but not erased).
+3. Privacy Policy and Terms were updated. **Have a lawyer review them** and fill the `VITE_COMPANY_*` variables.
+4. Test on a throw-away group: record expenses + a payment, leave one person unpaid, request a close, then in SQL Editor `update period_closes set effective_at = now() where status = 'pending';` and `select public.kh_finalize_due_closes();`. Check the summary, that the unpaid amount shows as "earlier balance", and that Balances totals did not change.
+
 ### Admin panel kaise kaam karta hai (privacy by design)
 Admin ko **sirf ginti aur technical data** milta hai: total users, naye sign-ups, groups/expenses/payments ki ginti, group ka ID + member count + status.
 Admin **nahi dekh sakta**: group/member ke naam, email, expense, amount, note, receipt, payment details.
@@ -184,3 +206,17 @@ Google ke consent screen par jo naam/URL dikhta hai wo **app ke code se nahi, Go
 
 ## 10. Updates ke baare me
 Ye app kisi cheez ko "update" nahi maangti. Sirf: (a) future me SQL badlao to naya migration file add hota hai, (b) `npm audit` se kabhi-kabhi dependencies update karna achchhi aadat hai.
+
+**v1.5.2:** app icon (home screen / install) is now the logo only, without the "Khatafy" text. Uninstall and reinstall the app (or clear site data) to see it on a phone.
+
+**v1.6.1:** a member can only add expenses they paid themselves (server-enforced), and the payer of an expense can never be changed. Run `supabase/migrations/0017_expense_payer_is_caller.sql`. The "Paid by" field is now read-only.
+
+**v1.7:** after a close, unpaid dues of the closed period are shown SEPARATELY ("Earlier dues: you need to pay / you will get", with the reason and the period end date) and are never mixed with new expenses; new shared items only affect the current period. A payment after the close first settles earlier dues between the same two people, the rest counts for the current period. Run `supabase/migrations/0018_balances_earlier_vs_current.sql`.
+
+**v1.7.1:** closing up to today now cuts at the moment of closing (expenses added later the same day work); expense date/time is always "now" and cannot be changed (server-enforced). Run `supabase/migrations/0019_close_same_day_and_auto_datetime.sql`.
+
+**v1.7.2:** payment date/time is always "now" and cannot be changed (server-enforced). Run `supabase/migrations/0020_payment_time_is_now.sql`.
+
+**v1.8:** Home shows three clear cards: My balance, **Current period** (since the last close) and **Last closed period**. Close & history is now ordered: Current period (live) -> Earlier unpaid record (separate) -> Close the books -> Settled history. Run `supabase/migrations/0021_period_overview.sql`.
+
+**v1.9:** period-wise (close-wise) views next to the monthly ones: Reports (Month | Period), Balances (Current | Monthly | Period) and Statement (This month | Last month | Period | Custom). A period = from one close to the next, or the current open period. Run `supabase/migrations/0022_period_wise_views.sql`.

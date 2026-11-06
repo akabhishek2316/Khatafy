@@ -106,3 +106,12 @@ export interface AdminOverview {
 }
 export interface AdminGroup { id: string; status: 'active' | 'archived'; created_at: string; members: number; expenses_30d: number }
 export interface AdminAuditRow { id: number; action: string; target: string | null; reason: string | null; created_at: string }
+
+export interface CloseSummary {
+  from_date: string | null; to_date: string; total_paise: number; expense_count: number; per_head_paise: number;
+  members: Array<{ user_id: string; name: string; paid_paise: number; share_paise: number; net_paise: number }>;
+  payments: Array<{ from_name: string; to_name: string; amount_paise: number; method: string; paid_at: string }>;
+}
+export interface PeriodClose { id: string; period_end: string; closed_at: string; closed_by_name: string; summary: CloseSummary | null; cut_at: string; from_at: string | null }
+
+export interface PeriodOverview { since: string | null; current: CloseSummary; last: PeriodClose | null }

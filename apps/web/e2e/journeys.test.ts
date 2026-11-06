@@ -20,7 +20,7 @@ const expect = async (page: Page, text: string | RegExp, timeout = 8000) => {
   try { await page.getByText(text).filter({ visible: true }).first().waitFor({ state: 'visible', timeout }); }
   catch (e) { const body = (await page.locator('body').innerText().catch(() => '')).slice(0, 700); throw new Error(`Expected text ${text} on ${page.url()}\n--- page shows ---\n${body}`, { cause: e }); }
 };
-const newPage = async (opts: Record<string, unknown> = {}) => { const ctx = await browser.newContext({ locale: 'en-US', ...opts }); const page = await ctx.newPage(); page.on('pageerror', (e) => { throw e; }); return { ctx, page }; };
+const newPage = async (opts: Record<string, unknown> = {}) => { const ctx = await browser.newContext({ locale: 'en-US', ...opts }); await ctx.addInitScript(() => { try { localStorage.setItem('kh.welcomed', '1'); } catch { /* ignore */ } }); const page = await ctx.newPage(); page.on('pageerror', (e) => { throw e; }); return { ctx, page }; };
 
 async function register(page: Page, name: string, email: string) {
   await page.goto(mock.url + '/register');
@@ -312,11 +312,12 @@ async function layoutProblems(page: Page): Promise<string[]> {
       if (!t || !el) continue;
       const cs = getComputedStyle(el);
       if (cs.visibility === 'hidden' || cs.display === 'none' || el.closest('[aria-hidden="true"]') || el.closest('.sr-only') || el.closest('script,style')) continue;
+      { const d = el.closest('details'); if (d && !d.open && !el.closest('summary')) continue; }
       const range = document.createRange(); range.selectNodeContents(n);
       for (const r of Array.from(range.getClientRects())) if (r.width > 2 && r.height > 4) boxes.push({ el, r, txt: t.slice(0, 24) });
     }
     const out: string[] = [];
-    const fixedUi = (e: Element) => !!e.closest('.bottomnav, .fab, .toasts, .topbar, header.top');
+    const fixedUi = (e: Element) => !!e.closest('.bottomnav, .fab, .toasts, .topbar, header.top, .sticky-actions');
     const scrolls = (e: Element) => { for (let x: Element | null = e; x && x !== document.body; x = x.parentElement) { const o = getComputedStyle(x).overflowX; if (o === 'auto' || o === 'scroll') return true; } return false; };
     for (const b of boxes) if ((b.r.right > vw + 1 || b.r.left < -1) && !scrolls(b.el)) out.push(`off-screen: "${b.txt}" (${Math.round(b.r.left)}..${Math.round(b.r.right)} of ${vw})`);
     for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
@@ -559,4 +560,33 @@ test('resend verification: 60-second timer on register and login', async () => {
   await a.page.evaluate(() => { for (const k of Object.keys(sessionStorage)) if (k.startsWith('kh.cd.')) sessionStorage.setItem(k, String(Date.now() - 1000)); });
   await a.page.waitForFunction(() => !document.querySelector<HTMLButtonElement>('button.btn-secondary')?.disabled, null, { timeout: 5000 });
   await a.ctx.close();
+});
+
+test('css audit: period pages at 360 / 768 / 1280 (closed period present, EN + HI)', async () => {
+  const uid = db.scalar(`select id::text from auth.users where email='ravi@example.com'`);
+  db.run(`delete from public.rate_limits`);
+  db.run(`select public.close_period('${ids.g}'::uuid, current_date)`, uid);
+  db.run(`select pg_sleep(0.05)`);
+  const dir = process.env.E2E_SHOTS;
+  const problems: string[] = [];
+  const eid = db.scalar(`select id::text from public.expenses where group_id='${ids.g}' order by created_at limit 1`);
+  const paths = [...['', '/close', '/statement', '/statement/open', '/balances', '/reports', '/settlements', '/members', `/members/${uid}`, '/diary', '/expense/new', `/expense/${eid}`, `/expense/${eid}/edit`, '/requests', '/invitations', '/shopping', '/notices', '/activity', '/settings', '/more'].map((p) => `/g/${ids.g}${p}`), '/groups', '/profile', '/profile/preferences', '/profile/password', '/profile/privacy', '/profile/account', '/help', '/notifications'];
+  for (const [w, h, mobile] of [[360, 740, true], [768, 900, false], [1280, 800, false]] as const) {
+    const m = await newPage({ viewport: { width: w, height: h }, isMobile: mobile, hasTouch: mobile });
+    await login(m.page, 'ravi@example.com'); await m.page.waitForURL('**/groups');
+    for (const lang of ['en', 'hi']) {
+      if (lang === 'hi') { await m.page.goto(`${mock.url}/profile/preferences`); await m.page.locator('select').first().selectOption('hi'); await m.page.waitForTimeout(600); }
+      for (const path of paths) {
+        await m.page.goto(mock.url + path); await m.page.waitForLoadState('networkidle'); await m.page.waitForTimeout(350);
+        if (dir) { const { mkdirSync } = await import('node:fs'); mkdirSync(dir, { recursive: true }); await m.page.screenshot({ path: join(dir, `${w}-${lang}${path.replace(ids.g, 'g').replace(eid, 'e').replace(uid, 'u').replace(/\//g, '-')}.png`), fullPage: true }); }
+        const ov = await m.page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+        if (ov > 1) problems.push(`[${w} ${lang}] ${path}: horizontal scroll ${ov}px`);
+        for (const p of await layoutProblems(m.page)) problems.push(`[${w} ${lang}] ${path}: ${p}`);
+      }
+    }
+    await m.page.goto(`${mock.url}/profile/preferences`); await m.page.locator('select').first().selectOption('en');
+    for (let i = 0; i < 30 && db.scalar(`select preferred_language from public.profiles where id='${uid}'`) !== 'en'; i++) await m.page.waitForTimeout(200);
+    await m.ctx.close();
+  }
+  assert.deepEqual(problems, []);
 });
