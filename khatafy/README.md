@@ -23,7 +23,11 @@ Hindi + English, INR (₹), paise-level accurate hisab, admin-approval se group 
 
 **v1.2:** sirf PDF download (JSON/CSV hata diye), Statement me person-wise filter + useful stats, Home se extra links hata diye, Settings danger zone theek, naya + button, mobile par chhota font, "You need to pay ..." wording.
 
-**v1.5.1:** review window for "Close period" shortened from 7 to 3 days. Run `supabase/migrations/0015_close_review_3_days.sql`.
+**v1.6 (current):** Close no longer deletes anything and has no waiting/objection window. Admin picks a date -> sees a preview -> confirms once -> a summary is saved in "Close & history" (PDF per close). Expenses shows only open (not closed) expenses; Balances show the current position (records after the last close; unpaid earlier dues appear separately as "earlier balance"). Statements: last 12 months only. On the LAST DAY of every month a cleanup deletes everything older than the last 12 months (expenses, payments, receipts, closed-period summaries) and keeps unpaid balances. Run, in order: `0013` (if never run), `0014` (if never run), `0016_close_no_delete_monthly_cleanup.sql` (0016 replaces the 0014 review flow (the old 0015 file was removed)).
+1. Enable **pg_cron** (Dashboard -> Integrations -> Cron) and re-run 0016 if it printed "pg_cron is not enabled". The monthly job runs 28th-31st at 22:00 IST and acts only on the real last day of the month.
+2. Deploy the Edge Function `supabase/functions/purge-receipts` (see its header) so receipt FILES of cleaned-up expenses are removed from Storage.
+3. Test on a throw-away group: add expenses, close, check Expenses is empty and Balances current; to test cleanup: `select public.kh_monthly_cleanup(true);` (data older than 12 months is deleted; set an expense date >12 months back first).
+4. Privacy Policy / Terms updated. **Have a lawyer review them.**
 
 **v1.5 (cleaner screens, no duplicate data):**
 - Home: one summary card (balance + this month + my share), pending confirmations, settle-up, last 3 expenses. Removed the per-person share card and budget card.
@@ -204,3 +208,15 @@ Google ke consent screen par jo naam/URL dikhta hai wo **app ke code se nahi, Go
 Ye app kisi cheez ko "update" nahi maangti. Sirf: (a) future me SQL badlao to naya migration file add hota hai, (b) `npm audit` se kabhi-kabhi dependencies update karna achchhi aadat hai.
 
 **v1.5.2:** app icon (home screen / install) is now the logo only, without the "Khatafy" text. Uninstall and reinstall the app (or clear site data) to see it on a phone.
+
+**v1.6.1:** a member can only add expenses they paid themselves (server-enforced), and the payer of an expense can never be changed. Run `supabase/migrations/0017_expense_payer_is_caller.sql`. The "Paid by" field is now read-only.
+
+**v1.7:** after a close, unpaid dues of the closed period are shown SEPARATELY ("Earlier dues: you need to pay / you will get", with the reason and the period end date) and are never mixed with new expenses; new shared items only affect the current period. A payment after the close first settles earlier dues between the same two people, the rest counts for the current period. Run `supabase/migrations/0018_balances_earlier_vs_current.sql`.
+
+**v1.7.1:** closing up to today now cuts at the moment of closing (expenses added later the same day work); expense date/time is always "now" and cannot be changed (server-enforced). Run `supabase/migrations/0019_close_same_day_and_auto_datetime.sql`.
+
+**v1.7.2:** payment date/time is always "now" and cannot be changed (server-enforced). Run `supabase/migrations/0020_payment_time_is_now.sql`.
+
+**v1.8:** Home shows three clear cards: My balance, **Current period** (since the last close) and **Last closed period**. Close & history is now ordered: Current period (live) -> Earlier unpaid record (separate) -> Close the books -> Settled history. Run `supabase/migrations/0021_period_overview.sql`.
+
+**v1.9:** period-wise (close-wise) views next to the monthly ones: Reports (Month | Period), Balances (Current | Monthly | Period) and Statement (This month | Last month | Period | Custom). A period = from one close to the next, or the current open period. Run `supabase/migrations/0022_period_wise_views.sql`.

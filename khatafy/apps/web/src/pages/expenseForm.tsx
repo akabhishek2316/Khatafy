@@ -112,7 +112,7 @@ function FormInner({ expenseId, existing }: { expenseId?: string; existing: impo
     const er: Record<string, string> = {};
     const input: ExpenseInput = {
       title: title.trim(), amountPaise: amountPaise ?? 0, categoryKey: category,
-      spentAt: spentAt ? localInputToIso(spentAt) : '', paidBy, splitMode: mode,
+      spentAt: exp ? exp.spent_at : new Date().toISOString(), paidBy, splitMode: mode,
       participants: chosen.map((p) => ({
         userId: p.id,
         ...(mode === 'amount' ? { amountPaise: parseRupeesToPaise(amounts[p.id] ?? '') ?? -1 } : {}),
@@ -184,10 +184,8 @@ function FormInner({ expenseId, existing }: { expenseId?: string; existing: impo
           ))}
         </fieldset>
         <div className="grid grid-2">
-          <Field label={t('expense.date')} type="datetime-local" value={spentAt} onChange={(e) => setSpentAt(e.target.value)} error={errs.date} />
-          <Select label={t('expense.paid_by')} value={paidBy} onChange={(e) => setPaidBy(e.target.value)} error={errs.paidBy}>
-            {people.map((p) => <option key={p.id} value={p.id}>{p.name}{p.id === me ? ` (${t('common.you')})` : ''}{p.left ? ` · ${t('member.left')}` : ''}</option>)}
-          </Select>
+          <Field label={t('expense.date')} value={exp ? new Date(exp.spent_at).toLocaleString() : t('expense.date_now')} readOnly disabled hint={t('expense.date_hint')} />
+          <Field label={t('expense.paid_by')} value={`${people.find((p) => p.id === paidBy)?.name ?? ''}${paidBy === me ? ` (${t('common.you')})` : ''}`} readOnly disabled hint={t('expense.paid_by_hint')} error={errs.paidBy} />
         </div>
       </Card>
 

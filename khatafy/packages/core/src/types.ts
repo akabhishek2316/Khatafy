@@ -112,8 +112,6 @@ export interface CloseSummary {
   members: Array<{ user_id: string; name: string; paid_paise: number; share_paise: number; net_paise: number }>;
   payments: Array<{ from_name: string; to_name: string; amount_paise: number; method: string; paid_at: string }>;
 }
-export interface PeriodClose {
-  id: string; status: 'pending' | 'closed'; period_end: string; requested_at: string; effective_at: string; closed_at: string | null;
-  requested_by_name: string; summary: CloseSummary | null; objection_count: number; my_objection: boolean;
-  objections: Array<{ name: string; reason: string }>;
-}
+export interface PeriodClose { id: string; period_end: string; closed_at: string; closed_by_name: string; summary: CloseSummary | null; cut_at: string; from_at: string | null }
+
+export interface PeriodOverview { since: string | null; current: CloseSummary; last: PeriodClose | null }

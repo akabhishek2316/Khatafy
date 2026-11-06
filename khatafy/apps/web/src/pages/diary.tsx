@@ -136,13 +136,13 @@ export function ExpenseDetailPage({ expenseId }: { expenseId: string }) {
       <Card>
         <p className="big-amount">{money(e.amount_paise)}</p>
         <dl className="kv">
-          <dt>{t('expense.category')}</dt><dd>{catIcon(e.category_key)} {lang === 'hi' ? cat?.name_hi : cat?.name_en}</dd>
-          <dt>{t('expense.date')}</dt><dd>{date(e.spent_at, true)}</dd>
-          <dt>{t('expense.paid_by')}</dt><dd>{e.paid_by_name}</dd>
-          <dt>{t('expense.split_type')}</dt><dd>{t(`split.${e.split_mode}`)}</dd>
-          <dt>{t('expense.added_label')}</dt><dd>{e.created_by_name} · {date(e.created_at, true)}</dd>
-          {lastEdit && <><dt>{t('expense.edited_label')}</dt><dd>{lastEdit.changed_by_name} · {date(lastEdit.created_at, true)}</dd></>}
-          {e.note && <><dt>{t('expense.note')}</dt><dd className="prewrap">{e.note}</dd></>}
+          <div><dt>{t('expense.category')}</dt><dd>{catIcon(e.category_key)} {lang === 'hi' ? cat?.name_hi : cat?.name_en}</dd></div>
+          <div><dt>{t('expense.date')}</dt><dd>{date(e.spent_at, true)}</dd></div>
+          <div><dt>{t('expense.paid_by')}</dt><dd>{e.paid_by_name}</dd></div>
+          <div><dt>{t('expense.split_type')}</dt><dd>{t(`split.${e.split_mode}`)}</dd></div>
+          <div><dt>{t('expense.added_label')}</dt><dd>{e.created_by_name} · {date(e.created_at, true)}</dd></div>
+          {lastEdit && <><div><dt>{t('expense.edited_label')}</dt><dd>{lastEdit.changed_by_name} · {date(lastEdit.created_at, true)}</dd></div></>}
+          {e.note && <><div><dt>{t('expense.note')}</dt><dd className="prewrap">{e.note}</dd></div></>}
         </dl>
       </Card>
       <Card title={t('expense.split_between')}>

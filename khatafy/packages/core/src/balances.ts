@@ -7,7 +7,9 @@ export interface MemberBalance {
   share_paise: number;
   settlement_paid_paise: number;
   settlement_received_paise: number;
-  carry_paise?: number; // earlier balance carried forward by "Close period"
+  carry_paise?: number; // earlier (closed-period) unpaid balance, kept separate from the current period
+  current_paise?: number; // this period only (after the last close)
+  earlier_until?: string | null; // end date of the last closed period
   net_paise: number;
 }
 
